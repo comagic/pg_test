@@ -70,23 +70,39 @@ class DBMS:
             ext_db_name = self.ext_db_name(db_name)
             self.log('green|Creating db %s', db_name)
             self.sql_execute('sys', 'create database %s' % ext_db_name)
-
             self.log('green|  creating schema')
-            os.system('(echo "set client_min_messages to warning;"; pg_import --section pre-data %(db_dir)s) | psql -U postgres -h %(host)s -p %(port)s %(ext_db_name)s > /dev/null' % locals())
+            os.system(
+                '(echo "set client_min_messages to warning;"; '
+                'pg_import --section pre-data %(db_dir)s) | '
+                'psql -U postgres -h %(host)s -p %(port)s %(ext_db_name)s '
+                '> /dev/null' % locals())
 
             self.log('green|  loading data')
-            os.system('pg_import --section data %(db_dir)s | psql -U postgres -h %(host)s -p %(port)s %(ext_db_name)s > /dev/null' % locals())
+            os.system(
+                'pg_import --section data %(db_dir)s | '
+                'psql -U postgres -h %(host)s -p %(port)s %(ext_db_name)s '
+                '> /dev/null' % locals())
 
             test_data = os.path.join(test_dir, 'data', db_name)
             if os.path.exists(test_data):
-                self.log('green|  loading test data into database %s' % db_name)
-                os.system('pg_import --section data %(test_data)s | psql -U postgres -h %(host)s -p %(port)s %(ext_db_name)s > /dev/null' % locals())
+                self.log('green|  loading test data into database %s' %
+                         db_name)
+                os.system(
+                    'pg_import --section data %(test_data)s | '
+                    'psql -U postgres -h %(host)s -p %(port)s %(ext_db_name)s '
+                    '> /dev/null' % locals())
 
             self.log('green|  creating constraint')
-            os.system('pg_import --section post-data %(db_dir)s | psql -U postgres -h %(host)s -p %(port)s %(ext_db_name)s > /dev/null' % locals())
+            os.system(
+                'pg_import --section post-data %(db_dir)s | '
+                'psql -U postgres -h %(host)s -p %(port)s %(ext_db_name)s '
+                '> /dev/null' % locals())
 
             self.log('green|DB connecting %s', db_name)
-            self.db_connections[db_name] = psycopg2.connect(dbname=ext_db_name, host=self.host, port=self.port, user='postgres')
+            self.db_connections[db_name] = psycopg2.connect(dbname=ext_db_name,
+                                                            host=self.host,
+                                                            port=self.port,
+                                                            user='postgres')
             self.sql_execute(db_name, refresh_seq)
 
     def disconnect_db(self):
@@ -113,8 +129,11 @@ class DBMS:
                 try:
                     sql = c.mogrify(query, query_params)
                 except Exception as ee:
-                    sql = 'unpattern(%s %s)  %s' % (ee.__class__.__name__, ee, query)
-                self.log('red|Exception on execute sql:\nyellow|%s\nred|%s: %s', sql, e.__class__.__name__, e)
+                    sql = 'unpattern(%s %s)  %s' % (ee.__class__.__name__,
+                                                    ee, query)
+                self.log(
+                    'red|Exception on execute sql:\nyellow|%s\nred|%s: %s',
+                    sql, e.__class__.__name__, e)
             raise e
         finally:
             while con.notices:

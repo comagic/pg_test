@@ -51,7 +51,6 @@ class Test:
 
     def build_db(self):
         self.dbms.build_db()
-        self.dbms.bind_dbs()
 
     def do_acts(self):
         self.log('green|DB testing')
