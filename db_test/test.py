@@ -33,7 +33,11 @@ class Test:
         sys.path.append(self.acts_dir)
         for root, dirs, files in os.walk(self.acts_dir):
             for f in files:
-                f_name, ext = f.rsplit('.', 1)
+                try:
+                    f_name, ext = f.rsplit('.', 1)
+                except ValueError as e:
+                    print("Error: failed to parse file name %s: %s" %
+                          (f_name, e))
                 if ext == 'py':
                     self.load_file(f_name)
         self.post_loading()
