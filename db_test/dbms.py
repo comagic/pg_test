@@ -52,8 +52,11 @@ class DBMS:
 
     def drop_db(self):
         for db_name in self.dbs:
-            self.log('green|Droping db %s', db_name)
-            self.sql_execute('sys', 'drop database %s' % self.ext_db_name(db_name))
+            try:
+                self.log('green|Droping db %s', db_name)
+                self.sql_execute('sys', 'drop database %s' % self.ext_db_name(db_name))
+            except psycopg2.ProgrammingError as e:
+                print("Error: Drop DB is failed, due to: %s" % e)
 
     def clean_all(self):
         self.disconnect_db()
@@ -89,8 +92,9 @@ class DBMS:
     def disconnect_db(self):
         for db_name in self.dbs:
             self.log('green|DB disconnecting %s', db_name)
-            self.db_connections[db_name].close()
-            del self.db_connections[db_name]
+            if self.db_connections.get(db_name):
+                self.db_connections[db_name].close()
+                del self.db_connections[db_name]
 
     def sql_execute(self, db_name, query, **query_params):
         res = None

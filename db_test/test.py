@@ -1,4 +1,5 @@
 # -*- coding:utf-8 -*-
+from functools import reduce
 import sys
 import os
 import json
@@ -45,6 +46,7 @@ class Test:
     def init_dbms(self):
         self.dbms = DBMS(self, self.args)
         if not self.save_db:
+            # TODO cleanup for DB move to upper level
             atexit.register(self.dbms.clean_all)
 
     def build_db(self):
