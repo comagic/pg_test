@@ -29,12 +29,13 @@ class Test:
         self.exts = {}
 
     def load_acts(self):
+        ''' Parse Actions/Tests from specified  directory '''
         sys.path.append(self.acts_dir)
         for root, dirs, files in os.walk(self.acts_dir):
             for f in files:
-                f, e = f.split('.')
-                if e == 'py':
-                    self.load_file(f)
+                f_name, ext = f.rsplit('.', 1)
+                if ext == 'py':
+                    self.load_file(f_name)
         self.post_loading()
 
     def init_dbms(self):
@@ -55,7 +56,7 @@ class Test:
 
     def log(self, message, *args):
         message = reduce(lambda m, color: m.replace(*color), colors.items(), message % args)
-        print message + colors['default|']
+        print(message + colors['default|'])
 
     def load_file(self, file_name):
         try:

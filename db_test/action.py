@@ -48,7 +48,7 @@ class Action:
         elif f['type'] == 'eval':
             self._d[field] = eval(f['cmd'], dict(globals(), **self._d))
         else:
-            print 'WARNING undefined type (%s) of calc_field' % f['type']
+            print('WARNING undefined type (%s) of calc_field' % f['type'])
         del self.calc_fields[field]
 
     def calculate_action_time(self):
