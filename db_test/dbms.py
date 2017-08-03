@@ -3,6 +3,11 @@ import os
 import time
 import psycopg2
 import psycopg2.extras
+import subprocess
+import sys
+import tempfile
+
+from pg_import import executor
 
 
 time_format = '%Y-%m-%d %h:%M:%s'
@@ -33,8 +38,27 @@ refresh_seq = """
       end loop;
     end;$$;"""
 
+
+class FileStub:
+    '''
+    Stub for processing of output of the pg_import parser
+
+    It uses list, for clear debugging and fixing. So each element in the list
+    is a content of seprate file in source DB repository.
+    '''
+    def __init__(self):
+        self.data = ""
+
+    def write(self, string):
+        self.data = ''.join([self.data, string])
+
+    def read(self):
+        return self.data
+
+
 class DBMS:
     def __init__(self, test, args):
+        self.docker = args.use_docker or True
         self.test = test
         self.log = self.test.log
         self.host = args.host
@@ -62,43 +86,76 @@ class DBMS:
         self.disconnect_db()
         self.drop_db()
 
+    def process_pg_import(self, section, db_dir, ext_db_name, extra_data=''):
+        ''' Get commands from pg_import and execute them '''
+        pg_cmds = FileStub()
+        kwargs = {
+            'section': {section},
+            'src_dir': db_dir,
+            'output': pg_cmds
+        }
+        executor.Executor(**kwargs)()
+
+        final_string = ''.join([extra_data, pg_cmds.read()])
+        if self.docker:
+            # NOTE Customization commands for docker!
+            # replace it due to hardcode in main repo comagic_db
+            final_string = final_string.replace(
+                '/usr/lib64/pgsql/tablefunc',
+                '/usr/lib/postgresql/9.6/lib/tablefunc')
+
+        # Create temporary file for easy debugging and other funny things
+        f_name = tempfile.mkstemp(suffix=section)[1]
+
+        # Write pg_import output to file
+        with open(f_name, 'w') as f_obj:
+            f_obj.write(final_string)
+
+        try:
+            # Execute all commands from the file
+            res = self.run_pysql_commands(f_name, ext_db_name)
+        except Exception as e:
+            os.remove(f_name)
+            raise e
+
+        if res.stderr:
+            sys.exit("Error during execution command: %s. Temporary file with "
+                     "DB data is available by path: %s" % (res.stderr, f_name))
+        os.remove(f_name)
+
+    def run_pysql_commands(self, f_name, ext_db_name):
+        ''' Execute cammand in subprocess to handle Errors '''
+        command = ('psql -f %(f_name)s -U postgres -h %(host)s -p %(port)s '
+                   '%(ext_db_name)s > /dev/null' % {'f_name': f_name,
+                                                    'host': self.host,
+                                                    'port': self.port,
+                                                    'ext_db_name': ext_db_name}
+        )
+        return subprocess.run(command, shell=True, check=True,
+                              stderr=subprocess.PIPE)
+
     def build_db(self):
-        port = self.port
-        host = self.host
-        test_dir = self.test_dir
         for db_name, db_dir in self.dbs.items():
             ext_db_name = self.ext_db_name(db_name)
-            self.log('green|Creating db %s', db_name)
+            self.log('green| Creating db %s', db_name)
             self.sql_execute('sys', 'create database %s' % ext_db_name)
-            self.log('green|  creating schema')
-            os.system(
-                '(echo "set client_min_messages to warning;"; '
-                'pg_import --section pre-data %(db_dir)s) | '
-                'psql -U postgres -h %(host)s -p %(port)s %(ext_db_name)s '
-                '> /dev/null' % locals())
+            self.log('green| Creating schema')
+            self.process_pg_import(
+                'pre-data', db_dir, ext_db_name,
+                extra_data="set client_min_messages to warning;")
 
-            self.log('green|  loading data')
-            os.system(
-                'pg_import --section data %(db_dir)s | '
-                'psql -U postgres -h %(host)s -p %(port)s %(ext_db_name)s '
-                '> /dev/null' % locals())
+            self.log('green| Loading data')
+            self.process_pg_import('data', db_dir, ext_db_name)
 
-            test_data = os.path.join(test_dir, 'data', db_name)
+            test_data = os.path.join(self.test_dir, 'data', db_name)
             if os.path.exists(test_data):
-                self.log('green|  loading test data into database %s' %
-                         db_name)
-                os.system(
-                    'pg_import --section data %(test_data)s | '
-                    'psql -U postgres -h %(host)s -p %(port)s %(ext_db_name)s '
-                    '> /dev/null' % locals())
+                self.log('green| Loading test data into database %s' % db_name)
+                self.process_pg_import('data', test_data, ext_db_name)
 
-            self.log('green|  creating constraint')
-            os.system(
-                'pg_import --section post-data %(db_dir)s | '
-                'psql -U postgres -h %(host)s -p %(port)s %(ext_db_name)s '
-                '> /dev/null' % locals())
+            self.log('green| Creating constraint')
+            self.process_pg_import('post-data', db_dir, ext_db_name)
 
-            self.log('green|DB connecting %s', db_name)
+            self.log('green| DB connecting %s', db_name)
             self.db_connections[db_name] = psycopg2.connect(dbname=ext_db_name,
                                                             host=self.host,
                                                             port=self.port,
