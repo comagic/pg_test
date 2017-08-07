@@ -2,7 +2,7 @@
 import json
 import copy
 
-class Action:
+class TestCase:
     def __init__(self, test, args):
         self.test = test
         self.is_extend = False
