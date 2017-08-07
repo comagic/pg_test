@@ -5,7 +5,7 @@ import os
 import sys
 import argparse
 import psycopg2
-from db_test import test
+from db_test import runner
 
 
 arg_parser = argparse.ArgumentParser(description='Run test',
@@ -29,8 +29,8 @@ for d in args.db_dirs:
 if not os.path.exists(os.path.expanduser(args.test_dir)):
     arg_parser.error("can not access to test_dir '%s'" % args.test_dir)
 
-t = test.TestRunner(args)
-t.load_tests()
-t.prepare_db()
-t.run_tests()
+r = runner.TestRunner(args)
+r.load_tests()
+r.prepare_db()
+r.run_tests()
 #clean_all do automaticaly on exit

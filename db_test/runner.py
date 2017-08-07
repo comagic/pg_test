@@ -5,7 +5,7 @@ import sys
 import os
 import json
 import atexit
-from db_test.action import TestCase
+from db_test.test_case import TestCase
 from db_test.dbms import DBMS
 
 
