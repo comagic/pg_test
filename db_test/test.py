@@ -1,5 +1,6 @@
 # -*- coding:utf-8 -*-
 from functools import reduce
+import itertools
 import sys
 import os
 import json
@@ -51,29 +52,18 @@ class TestRunner(ProcessMixin):
         for s in self.tests:
             res = s.run()
             if res:
-                self.log('blue| %s %s %s',
-                          s.action_datetime,
+                self.log('blue| %s %s',
                           s._d.get('check_name', '<nameless>').ljust(30),
                           res)
 
-    def post_loading(self):
+    def validate_tests(self):
         if not self.db_tests and not self.python_tests:
             self.log("red| There is no available tests. Execution is canceled")
             sys.exit()
 
-        for i in self.db_tests:
+        for i in itertools.chain(self.db_tests, self.python_tests):
             s = TestCase(self, i)
             self.tests.append(s)
-            if s.name:
-                self.exts[s.name] = s
-
-        for s in self.tests:
-            s.extend()
-        for s in self.tests:
-            s.calculate_fields()
-        self.tests = sorted(
-            [s for s in self.tests if s.action_datetime],
-            key=lambda x: x.action_datetime)
 
     def import_tests(self, file_name):
         try:
@@ -99,4 +89,4 @@ class TestRunner(ProcessMixin):
                              (f_name, e))
                 if ext == 'py':
                     self.import_tests(f_name)
-        self.post_loading()
+        self.validate_tests()
