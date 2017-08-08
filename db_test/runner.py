@@ -5,7 +5,7 @@ import sys
 import os
 import json
 import atexit
-from db_test.test_case import TestCase
+from db_test import test_case as tc
 from db_test.dbms import DBMS
 
 
@@ -52,18 +52,30 @@ class TestRunner(ProcessMixin):
         for s in self.tests:
             res = s.run()
             if res:
-                self.log('blue| %s %s',
-                          s._d.get('check_name', '<nameless>').ljust(30),
-                          res)
+                self.log('blue| %s %s', s.name, res)
 
     def validate_tests(self):
         if not self.db_tests and not self.python_tests:
             self.log("red| There is no available tests. Execution is canceled")
             sys.exit()
 
-        for i in itertools.chain(self.db_tests, self.python_tests):
-            s = TestCase(self, i)
-            self.tests.append(s)
+        # TODO does not supported right now and it ignored
+        if self.python_tests:
+            self.log("yellow| python_tests does not supported right now and "
+                     "will be ignored")
+        validator = tc.Validator(self.db_tests)
+        ok_tests, failed_tests = validator.validate()
+        for t_name, errs in failed_tests:
+            errs_msg = '\n - '.join(errs)
+            self.log("%s red|:\n - %s" % (t_name, errs_msg))
+
+        if not ok_tests:
+            self.log("red| Error: There is no correctly defined tests. "
+                     "Execution is canceled")
+            sys.exit()
+        for t_name, t_data in ok_tests:
+            t = tc.TestCase(self, t_name, t_data)
+            self.tests.append(t)
 
     def import_tests(self, file_name):
         try:

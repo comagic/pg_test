@@ -38,6 +38,16 @@ The follow block demostrate output of CLI "help" command.
 NOTE: by default option "-u" is True, so it means, that script expects host and
 port from postgress cluster which was run in docker.
 
+Execution can be run by follow command from db_test repository:
+
+.. code-block::
+
+   db_test -t examples/ -d comagic:../comagic_db  -h localhost -p 5432
+
+`examples` - directory contains list of tests and test data.
+`comagic` - is a name of db for testing
+`../comagic_db` - directory with repository of DB files
+
 
 Test Case Definition
 --------------------
@@ -47,8 +57,10 @@ subdirectories:
 * data
 * tests
 
-Where "data" contains sql commands for creating data in DB for testing. It can
-be some examples of real data or copy from production DB.
+Where "data" contains subdirectories with name equals `db_name` specified via
+"-d" option. These subdirectories have files with sql commands for creating
+data in DB for testing. It can be some examples of real data or copy from
+production DB.
 
 "tests" contains python files with definitions of test cases in JSON format.
 Test cases have to be defined as one of two allowed options:
@@ -61,6 +73,7 @@ Following example demonstrates how test definition can look:
 
     db_tests = [
         'test_name1': {
+            'db': "test_db",
             'sql': "select * from tt where id = %(p1)s and val = %(p2)s",
             'params': {
                 'p1': 123,
@@ -77,6 +90,7 @@ Following example demonstrates how test definition can look:
             'result': [4,5,6],
         }
         'test_name3': {
+            'db': "test_db",
             'sql': 'insert table tt v1 = %(p1)s',
             'sql_check': "select * from tt"
         }
@@ -96,6 +110,9 @@ required keys:
 - result
    Result of execution of "sql" or "sql_check" in JSON format
 
+- db
+  Name of DB for testing, which was specified via "-d" CLI option
+
 optional keys:
 - check_sql
    Defines 'sql' request for checking request specified in section `sql`.
@@ -106,3 +123,21 @@ optional keys:
    parameters this section can be used for minimization copy-paste. Using this
    option will create new test with copy of parameters from paretn test case.
 
+
+Local testing with Docker
+-------------------------
+
+db_test repository contains files for building Docker image with postgress
+cluster. These files are available in directory scripts/docker_postgres.
+To run it just execute follow commands:
+
+.. code-block::
+
+    docker build scripts/docker_postgres
+    docker run -d -p 5432:5432 <image_id from output of previous command>
+
+Then run examples with command:
+
+.. code-block::
+
+    db_test -t examples/ -d <db_name>:<directory with DB repository> -h localhost -p 5432

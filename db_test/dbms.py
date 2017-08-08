@@ -119,8 +119,10 @@ class DBMS:
             raise e
 
         if res.stderr:
-            sys.exit("Error during execution command: %s. Temporary file with "
-                     "DB data is available by path: %s" % (res.stderr, f_name))
+            self.log("red| Error during execution command: %s. Temporary file "
+                     "with DB data is available by path: %s" %
+                     (res.stderr, f_name))
+            sys.exit()
         os.remove(f_name)
 
     def run_pysql_commands(self, f_name, ext_db_name):
@@ -144,13 +146,13 @@ class DBMS:
                 'pre-data', db_dir, ext_db_name,
                 extra_data="set client_min_messages to warning;")
 
-            self.log('green| Loading data')
+            self.log('green| Loading default data')
             self.process_pg_import('data', db_dir, ext_db_name)
 
             test_data = os.path.join(self.test_dir, 'data', db_name)
             if os.path.exists(test_data):
                 self.log('green| Loading test data into database %s' % db_name)
-                self.process_pg_import('data', test_data, ext_db_name)
+                self.process_pg_import('data', self.test_dir, ext_db_name)
 
             self.log('green| Creating constraint')
             self.process_pg_import('post-data', db_dir, ext_db_name)
@@ -174,17 +176,17 @@ class DBMS:
         con = None
         try:
             con = self.db_connections[db_name]
-            c = con.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
-            c.execute(query, query_params)
-            if c.rowcount > 0:
-                res = c.fetchall()
+            cur = con.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+            cur.execute(query, query_params)
+            if cur.rowcount > 0:
+                res = cur.fetchall()
             con.commit()
         except Exception as e:
             if con:
                 con.rollback()
             if self.test.is_debug:
                 try:
-                    sql = c.mogrify(query, query_params)
+                    sql = cur.mogrify(query, query_params)
                 except Exception as ee:
                     sql = 'unpattern(%s %s)  %s' % (ee.__class__.__name__,
                                                     ee, query)
@@ -195,5 +197,5 @@ class DBMS:
         finally:
             while con.notices:
                 self.log('yellow|%s', con.notices.pop())
-            c.close()
+            cur.close()
         return res
