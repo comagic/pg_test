@@ -3,6 +3,10 @@ import json
 import copy
 
 
+class TestException(Exception):
+    pass
+
+
 class TestKey:
     def __init__(self, name, _type=str, required=False, custom_check=None):
         self.name = name
@@ -13,7 +17,7 @@ class TestKey:
 
 db_schema = [
     TestKey('sql', required=True),
-    TestKey('result', required=True, _type=list),
+    TestKey('result', required=True, _type='any'),
     TestKey('db', required=True),
     TestKey('check_sql'),
     TestKey('params', _type=dict),
@@ -55,7 +59,8 @@ class Validator:
         # check types of keys
         for key in db_schema:
             if test_data.get(key.name):
-                if key._type != type(test_data.get(key.name)):
+                if (key._type != type(test_data.get(key.name))
+                        and key._type != 'any'):
                     errs.append(
                         "Type of the key '%s' is incorrect. Expected - %s, "
                         "actual - %s" % (key.name, key._type,
@@ -116,8 +121,22 @@ class TestCase:
             }
             if self.data.get('params'):
                 kwargs.update(self.data['params'])
+            try:
+                res = self.test.dbms.sql_execute(**kwargs)
+            except TestException:
+                return "red| Failed"
 
-            res = self.test.dbms.sql_execute(**kwargs)
+        if 'check_sql' in self.data:
+            check_kwargs = {
+                'db_name': self.data['db'],
+                'query': self.data['check_sql']
+            }
+            if self.data.get('params'):
+                check_kwargs.update(self.data['params'])
+            try:
+                res = self.test.dbms.sql_execute(**check_kwargs)
+            except TestException:
+                return "red| Failed"
 
 #        import pdb; pdb.set_trace()
         if res == self.data['result']:
@@ -126,15 +145,3 @@ class TestCase:
             return ("red| Expected result: \n%s \ndoes not much actual: \n%s" %
                     (self.data['result'], res))
 
-#        if 'check_sql' in self.data:
-#            try:
-#                res = self.test.dbms.sql_execute(
-#                    self.check_database, self.check_sql, **self.data)
-#                if res and res[0]['result'] == True:
-#                    return 'green| Ok'
-#                return 'red| Fail'
-#            except Exception as e:
-#                if self.test.is_debug:
-#                    self.test.log('red| Exception %s: %s',
-#                                  e.__class__.__name__, e)
-#                return 'red| Exception'

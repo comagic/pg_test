@@ -8,6 +8,7 @@ import sys
 import tempfile
 
 from pg_import import executor
+from db_test import test_case
 
 
 time_format = '%Y-%m-%d %h:%M:%s'
@@ -181,7 +182,7 @@ class DBMS:
             if cur.rowcount > 0:
                 res = cur.fetchall()
             con.commit()
-        except Exception as e:
+        except (Exception, psycopg2.Error) as e:
             if con:
                 con.rollback()
             if self.test.is_debug:
@@ -191,9 +192,9 @@ class DBMS:
                     sql = 'unpattern(%s %s)  %s' % (ee.__class__.__name__,
                                                     ee, query)
                 self.log(
-                    'red|Exception on execute sql:\nyellow|%s\nred|%s: %s',
+                    'red| Exception on execute sql:\nyellow|%s\nred|%s: %s',
                     sql, e.__class__.__name__, e)
-            raise e
+            raise test_case.TestException()
         finally:
             while con.notices:
                 self.log('yellow|%s', con.notices.pop())

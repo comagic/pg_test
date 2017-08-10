@@ -1,3 +1,5 @@
+from datetime import datetime
+
 db_tests = [
     ('test_get_yandex_metrika_clients_with_params1', {
         'db': 'comagic',
@@ -35,4 +37,76 @@ db_tests = [
             {'site_id': 25187, 'app_id': 1103, 'access_token': 'auth6', 'counter_id': 7869, 'counter_ext_id': '43993829'}
         ]
     }),
+    ('test_get_ym_call_data', {
+        'db': 'comagic',
+        'sql': "select * from ppc.get_ym_call_data(%(app_id)s, %(site_id)s, %(dates)s)",
+        'params': {
+            'app_id': 1103,
+            'site_id': 2400,
+            'dates': [datetime(2011, 1, 1), datetime(2011, 1, 2)]
+        },
+        'result': {'get_ym_call_data': None}
+    }),
+    ('test_get_yandex_metrika_session_None', {
+        'db': 'comagic',
+        'sql': ("select * from ppc.get_yandex_metrika_session("
+                "           %(app_id)s, %(site_id)s, %(start_time)s, "
+                "           %(url)s, %(screen)s)"),
+        'params': {
+            'app_id': 1103,
+            'site_id': 2400,
+            'start_time': datetime(2017, 1, 1),
+            'url': "http//test.com",
+            'screen': "100x200"
+        },
+        'result': None
+    }),
+#    TODO add real data for real session
+#    ('test_get_yandex_metrika_session', {
+#        'db': 'comagic',
+#        'sql': ("select * from ppc.get_yandex_metrika_session("
+#                "           %(app_id)s, %(site_id)s, %(start_time)s, "
+#                "           %(url)s, %(screen)s)"),
+#        'params': {
+#            'app_id': 1103,
+#            'site_id': 2400,
+#            'start_time': datetime(2017, 1, 1),
+#            'url': "http//test.com",
+#            'screen': "100x200"
+#        },
+#        'result': [1, 2, 3]
+#    }),
+
+#    TODO test it later (low priority)
+#    ('test_add_yandex_counter_grabber_log', {
+#        'db': 'comagic',
+#        'sql': ("select ppc.add_yandex_counter_grabber_log(%(app_id)s,"
+#                " %(counter_id)s, %(start_time)s, %(fetched)s, %(matched)s)"),
+#        'params': {
+#            'app_id': 1103,
+#            'counter_id': 2400,
+#            'start_time': datetime(2017, 1, 1),
+#            'fetched': 1,
+#            'matched': 3
+#        },
+#        'check_sql': "select * from ppc.yandex_counter_grabber_log where counter_id = 2400",
+#        'result': []
+#    }),
+
+#    TODO test it later (low priority)
+#    ('test_load_yandex_counter_data', {
+#        'db': 'comagic',
+#        'sql': ("select ppc.load_yandex_counter_data("
+#                "      %(app_id)s, %(site_id)s, %(ext_source)s, %(data)s)"),
+#        'params': {
+#            'app_id': 1103,
+#            'site_id': 2400,
+#            'ext_source': 1111,
+#            'data': {"val":1}
+#        },
+#        'check_sql': "select * from ppc.pc",
+#
+#        'result': []
+#    }),
+
 ]
