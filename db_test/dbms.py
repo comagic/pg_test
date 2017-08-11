@@ -71,6 +71,8 @@ class DBMS:
         self.db_connections = {}
         self.db_connections['sys'] = psycopg2.connect(dbname='postgres', host=self.host, port=self.port, user='postgres')
         self.db_connections['sys'].set_isolation_level(psycopg2.extensions.ISOLATION_LEVEL_AUTOCOMMIT)
+        self.test_error = False
+        self.test_err_msg = "green| No error"
 
     def ext_db_name(self, db_name):
         return db_name + self.ext_name
@@ -175,12 +177,18 @@ class DBMS:
     def sql_execute(self, db_name, query, **query_params):
         res = None
         con = None
+        self.test_error = False
+        self.test_err_msg = "green| No error"
         try:
             con = self.db_connections[db_name]
             cur = con.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
             cur.execute(query, query_params)
             if cur.rowcount > 0:
-                res = cur.fetchall()
+                try:
+                    res = cur.fetchall()
+                except psycopg2.ProgrammingError:
+                    # catch error if execute return something on "insert"
+                    pass
             con.commit()
         except (Exception, psycopg2.Error) as e:
             if con:
@@ -191,12 +199,12 @@ class DBMS:
                 except Exception as ee:
                     sql = 'unpattern(%s %s)  %s' % (ee.__class__.__name__,
                                                     ee, query)
-                self.log(
-                    'red| Exception on execute sql:\nyellow|%s\nred|%s: %s',
-                    sql, e.__class__.__name__, e)
-            raise test_case.TestException()
+                self.test_err_msg = (
+                    "red| Exception on execute sql:\nyellow|%s\nred|%s: %s" %
+                    (sql, e.__class__.__name__, e))
+            self.test_error = True
         finally:
             while con.notices:
-                self.log('yellow|%s', con.notices.pop())
+                self.log('yellow| %s', con.notices.pop())
             cur.close()
         return res

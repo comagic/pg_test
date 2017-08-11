@@ -73,7 +73,8 @@ class TestRunner(ProcessMixin):
             self.log("red| Error: There is no correctly defined tests. "
                      "Execution is canceled")
             sys.exit()
-        for t_name, t_data in ok_tests:
+        # sort by name to make tests order predicted
+        for t_name, t_data in sorted(ok_tests, key=lambda x: x[0]):
             t = tc.TestCase(self, t_name, t_data)
             self.tests.append(t)
 

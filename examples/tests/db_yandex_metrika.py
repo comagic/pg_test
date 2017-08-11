@@ -45,7 +45,7 @@ db_tests = [
             'site_id': 2400,
             'dates': [datetime(2011, 1, 1), datetime(2011, 1, 2)]
         },
-        'result': {'get_ym_call_data': None}
+        'result': [{'get_ym_call_data': None}]
     }),
     ('test_get_yandex_metrika_session_None', {
         'db': 'comagic',

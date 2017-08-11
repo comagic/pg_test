@@ -92,9 +92,12 @@ Following example demonstrates how test definition can look:
         'test_name3': {
             'db': "test_db",
             'sql': 'insert table tt v1 = %(p1)s',
-            'sql_check': "select * from tt"
+            'check_sql': "select * from tt"
         }
     ]
+
+*NOTE*: all sql commands support several selects one by one, but only result of
+the last will be fetched and tested.
 
 More examples are available in repository in directory: "examples".
 
@@ -122,7 +125,15 @@ optional keys:
    In case, when some test has the same sql request but with different
    parameters this section can be used for minimization copy-paste. Using this
    option will create new test with copy of parameters from paretn test case.
+- cleanup
+   Option for 'sql' request which remove data created by execution first 'sql'
+   query.
 
+
+python_tests
+~~~~~~~~~~~~
+
+Does not supported for now.
 
 Local testing with Docker
 -------------------------

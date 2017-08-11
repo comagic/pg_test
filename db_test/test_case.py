@@ -3,10 +3,6 @@ import json
 import copy
 
 
-class TestException(Exception):
-    pass
-
-
 class TestKey:
     def __init__(self, name, _type=str, required=False, custom_check=None):
         self.name = name
@@ -21,7 +17,8 @@ db_schema = [
     TestKey('db', required=True),
     TestKey('check_sql'),
     TestKey('params', _type=dict),
-    TestKey('parent', custom_check='parent_check')
+    TestKey('parent', custom_check='parent_check'),
+    TestKey('cleanup')
 ]
 
 
@@ -110,21 +107,32 @@ class TestCase:
         self.data = data
 
     def run(self):
+        result = self._run()
+        if self.data.get('cleanup') and 'green' in result:
+            kwargs = {
+                'db_name': self.data['db'],
+                'query': self.data['cleanup']
+            }
+            res = self.test.dbms.sql_execute(**kwargs)
+            if self.test.dbms.test_error:
+                return ("red| Cleanup failed\n%s" %
+                        self.test.dbms.test_err_msg)
+        return result
+
+    def _run(self):
         if self.data['db'] not in self.test.dbms.db_connections:
             return ("yellow| There is no target DB for testing - %s. "
                     "Available DB names are: %s. Skipped." %
                     (self.data['db'], self.test.dbms.db_connections.keys()))
-        if 'sql' in self.data:
-            kwargs = {
-                'db_name': self.data['db'],
-                'query': self.data['sql']
-            }
-            if self.data.get('params'):
-                kwargs.update(self.data['params'])
-            try:
-                res = self.test.dbms.sql_execute(**kwargs)
-            except TestException:
-                return "red| Failed"
+        kwargs = {
+            'db_name': self.data['db'],
+            'query': self.data['sql']
+        }
+        if self.data.get('params'):
+            kwargs.update(self.data['params'])
+        res = self.test.dbms.sql_execute(**kwargs)
+        if self.test.dbms.test_error:
+            return ("red| Failed\n%s" % self.test.dbms.test_err_msg)
 
         if 'check_sql' in self.data:
             check_kwargs = {
@@ -133,15 +141,13 @@ class TestCase:
             }
             if self.data.get('params'):
                 check_kwargs.update(self.data['params'])
-            try:
-                res = self.test.dbms.sql_execute(**check_kwargs)
-            except TestException:
-                return "red| Failed"
+            res = self.test.dbms.sql_execute(**check_kwargs)
+            if self.test.dbms.test_error:
+                return ("red| Failed\n%s" % self.test.dbms.test_err_msg)
 
-#        import pdb; pdb.set_trace()
         if res == self.data['result']:
             return "green| Passed"
         else:
-            return ("red| Expected result: \n%s \ndoes not much actual: \n%s" %
-                    (self.data['result'], res))
+            return ("red| Failed\n Expected result: \n%s \ndoes not much "
+                    "actual: \n%s" % (self.data['result'], res))
 

@@ -24,5 +24,14 @@ db_tests = [
         'result': [
             {'name': 'Город', 'ac_parameter_group_id': 3, 'help_text': None, 'type': None, 'id': 'city', 'weight': 5}
         ]
+    }),
+    ('test_ppc_region_upload', {
+        'db': 'comagic',
+        'sql': "insert into ppc.region (id, ext_id, name) values (42, 4242, 'Test region')",
+        'check_sql': "select * from ppc.region where id = 42",
+        'result': [
+            {'name': 'Test region', 'parent_ext_id': None, 'id': 42, 'type': None, 'ext_id': 4242}
+        ],
+        'cleanup': "delete from ppc.region where id = 42",
     })
 ]
