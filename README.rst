@@ -107,6 +107,7 @@ db_tests
 ~~~~~~~~
 
 required keys:
+
 - sql
    Defines 'sql' request for testing.
 
@@ -117,6 +118,7 @@ required keys:
   Name of DB for testing, which was specified via "-d" CLI option
 
 optional keys:
+
 - check_sql
    Defines 'sql' request for checking request specified in section `sql`.
 - params
