@@ -126,7 +126,7 @@ Test cases have to be defined as one of two allowed options:
 
 Following example demonstrates how test definition can look:
 
-.. code-block::
+.. code-block:: python
 
     db_tests = [
         'test_name1': {
@@ -194,3 +194,37 @@ python_tests
 
 This feature does not supported by now.
 
+Test case extras
+----------------
+
+Some tests may require some specific data types on input. For example it can be
+datetime or JSON object.
+Such issues should be solved by using python libriraies. Snippet below
+demostrates it:
+
+
+.. code-block:: python
+
+    import json
+    import datetime
+
+    db_tests = [
+        'test_name1': {
+            'db': "test_db",
+            'sql': "select * from tt where start_date = %(p1)s and val = %(p2)s",
+            'params': {
+                'p1': datetime.datetime(1, 2, 3),
+                'p2': 321,
+            },
+            'result': [1,2,3],
+        },
+        'test_name2': {
+            'db': "test_db",
+            'sql': "select tt.load_values(%(p1)s)",
+            'check_sql': "select num from tt",
+            'params': {
+                'p1': json.dumps([{'num': 789}]),
+            },
+            'result': [789],
+        }
+    ]
