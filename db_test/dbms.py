@@ -59,7 +59,7 @@ class FileStub:
 
 class DBMS:
     def __init__(self, test, args):
-        self.docker = args.use_docker or True
+        self.docker = args.use_docker or False
         self.test = test
         self.log = self.test.log
         self.host = args.host

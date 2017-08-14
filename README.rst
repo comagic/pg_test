@@ -13,10 +13,75 @@ How it works:
 - create DB from repository with DB files
 - run tests against created DB
 
+How to start
+------------
+
+Optionally prepare virtualenv for isolated test environment or install
+dependencies to root system.
+
+.. code-block:: bash
+    sudo apt-get install virtualenv
+    vistualenv test_db
+    source test_db/bin/activate
+
+Install dependencies and db_test:
+
+.. code-block:: bash
+    git clone git@git.dev.uiscom.ru:tools/pg_import.git
+    cd pg_import
+    # Manually Apply diff from https://git.dev.uiscom.ru/tools/pg_import/merge_requests/1
+    pip install -e .
+    cd ..
+    git clone git@git.dev.uiscom.ru:tools/db_test.git
+    cd db_test
+    pip install -r requirements
+    pip install -e .
+
+Check that tools were installed. Execute follow commands:
+
+.. code-block:: bash
+    db_test --help
+    pg_import --help
+
+After installation, tests can be run from examples directory on local machine
+by using Postgress cluster installed in Docker or on some remote Postgress
+cluster. The section below describes preparation steps for creating and running
+docker container locally. In case if using some other Posgres cluster, it can
+be skipped.
+
+Local testing with Docker
+-------------------------
+
+**db_test** repository contains files for building Docker image with postgress
+cluster. These files are available in directory scripts/docker_postgres.
+To run it just execute the following commands from **db_test** directory:
+
+.. code-block:: bash
+
+    # Install docker local
+    # sudo apt-get install docker.io docker
+    # Build docker image
+    docker build scripts/docker_postgres
+    docker run -d -p 5432:5432 <image_id from output of previous command>
+
+Then run examples from **db_test** repository with command:
+
+.. code-block:: bash
+
+   db_test -u -t examples/ -d comagic:../comagic_db -h localhost -p 5432
+
+Where:
+
+- **comagic** is a name of DB for testing
+- **../comagic_db** is a path to repository with DB files (data, schema, etc.)
+- **localhost:5432** is a host an port of local Postrgress cluster in docker
+  container
+- **-u** option enables special hooks for installation DB in container
+
 CLI commands
 ------------
 
-The follow block demostrate output of CLI "help" command.
+The block below demostrates output of CLI "help" command.
 
 .. code-block::
 
@@ -35,24 +100,16 @@ The follow block demostrate output of CLI "help" command.
       -s, --save            do not drop database on exit
       -u, --use-docker      use docker or some other DB
 
-NOTE: by default option "-u" is True, so it means, that script expects host and
-port from postgress cluster which was run in docker.
+By default script expects host and port from external postgress cluster.
+To use postgress runed in local docker container add flag **-u**.
 
-Execution can be run by follow command from db_test repository:
-
-.. code-block::
-
-   db_test -t examples/ -d comagic:../comagic_db  -h localhost -p 5432
-
-`examples` - directory contains list of tests and test data.
-`comagic` - is a name of db for testing
-`../comagic_db` - directory with repository of DB files
-
+By default a temporary DB created for running tests will be deleted after
+a testing. To change behavior and don't remove DB at the end, add flag **-s**.
 
 Test Case Definition
 --------------------
 
-Test directory (which you specify via "-t" option) should contains following
+Test directory (which you specify via "-t" option) should contain the following
 subdirectories:
 * data
 * tests
@@ -96,8 +153,8 @@ Following example demonstrates how test definition can look:
         }
     ]
 
-*NOTE*: all sql commands support several selects one by one, but only result of
-the last will be fetched and tested.
+**NOTE: all sql commands support several selects one by one, but only result of
+the last will be fetched and tested.**
 
 More examples are available in repository in directory: "examples".
 
@@ -135,22 +192,5 @@ optional keys:
 python_tests
 ~~~~~~~~~~~~
 
-Does not supported for now.
+This feature does not supported by now.
 
-Local testing with Docker
--------------------------
-
-db_test repository contains files for building Docker image with postgress
-cluster. These files are available in directory scripts/docker_postgres.
-To run it just execute follow commands:
-
-.. code-block::
-
-    docker build scripts/docker_postgres
-    docker run -d -p 5432:5432 <image_id from output of previous command>
-
-Then run examples with command:
-
-.. code-block::
-
-    db_test -t examples/ -d <db_name>:<directory with DB repository> -h localhost -p 5432

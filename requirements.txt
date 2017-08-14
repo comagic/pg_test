@@ -1,1 +1,1 @@
-pg_import
+psycopg2
