@@ -33,11 +33,10 @@ class TestRunner(ProcessMixin):
         self.save_db = args.save
         self.tests_dir = os.path.join(self.test_dir, 'tests')
 
-        # split execution for python and for db tests
-        self.db_tests = []
-        self.python_tests = []
-
+        # All tests in one variable
         self.tests = []
+        # Separate variable for runned tests
+        self.correct_tests = []
         self.exts = {}
 
     def prepare_db(self):
@@ -49,21 +48,17 @@ class TestRunner(ProcessMixin):
 
     def run_tests(self):
         self.log('green| DB testing')
-        for s in self.tests:
+        for s in self.correct_tests:
             res = s.run()
             if res:
                 self.log('blue| %s %s', s.name, res)
 
     def validate_tests(self):
-        if not self.db_tests and not self.python_tests:
+        if not self.tests:
             self.log("red| There is no available tests. Execution is canceled")
             sys.exit()
 
-        # TODO does not supported right now and it ignored
-        if self.python_tests:
-            self.log("yellow| python_tests does not supported right now and "
-                     "will be ignored")
-        validator = tc.Validator(self.db_tests)
+        validator = tc.Validator(self.tests)
         ok_tests, failed_tests = validator.validate()
         for t_name, errs in failed_tests:
             errs_msg = '\n - '.join(errs)
@@ -76,7 +71,7 @@ class TestRunner(ProcessMixin):
         # sort by name to make tests order predicted
         for t_name, t_data in sorted(ok_tests, key=lambda x: x[0]):
             t = tc.TestCase(self, t_name, t_data)
-            self.tests.append(t)
+            self.correct_tests.append(t)
 
     def import_tests(self, file_name):
         try:
@@ -84,8 +79,9 @@ class TestRunner(ProcessMixin):
         except Exception as e:
             self.log("red| Can't load file: %s", file_name)
             raise
+        # TODO rename db_tests to tests!!!
         if hasattr(test_file, 'db_tests'):
-            self.db_tests.extend(test_file.db_tests)
+            self.tests.extend(test_file.db_tests)
         if hasattr(test_file, 'python_tests'):
             self.python_tests.extend(test_file.python_tests)
 

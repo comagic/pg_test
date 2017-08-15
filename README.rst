@@ -19,14 +19,14 @@ How to start
 Optionally prepare virtualenv for isolated test environment or install
 dependencies to root system.
 
-.. code-block:: bash
+.. code-block::
     sudo apt-get install virtualenv
     vistualenv test_db
     source test_db/bin/activate
 
 Install dependencies and db_test:
 
-.. code-block:: bash
+.. code-block::
     git clone git@git.dev.uiscom.ru:tools/pg_import.git
     cd pg_import
     # Manually Apply diff from https://git.dev.uiscom.ru/tools/pg_import/merge_requests/1
@@ -39,7 +39,7 @@ Install dependencies and db_test:
 
 Check that tools were installed. Execute follow commands:
 
-.. code-block:: bash
+.. code-block::
     db_test --help
     pg_import --help
 
@@ -56,7 +56,7 @@ Local testing with Docker
 cluster. These files are available in directory scripts/docker_postgres.
 To run it just execute the following commands from **db_test** directory:
 
-.. code-block:: bash
+.. code-block::
 
     # Install docker local
     # sudo apt-get install docker.io docker
@@ -66,7 +66,7 @@ To run it just execute the following commands from **db_test** directory:
 
 Then run examples from **db_test** repository with command:
 
-.. code-block:: bash
+.. code-block::bash
 
    db_test -u -t examples/ -d comagic:../comagic_db -h localhost -p 5432
 
@@ -168,6 +168,18 @@ required keys:
 - sql
    Defines 'sql' request for testing.
 
+- method
+   String with full path for accesing method of class to work with DB. It has
+   format: "<path_to_module_with_db_class>.<db_class>.<method_name>". For
+   example: "comagic_asi.sync_worker.model.model.Model.get_ym_call_data"
+
+**NOTE: There are to special requirements for keys mentioned above:**
+  1. **sql** can be used in the same time with **method**. In this case two
+     tests (with `db-` and `python-` prefixes) will be run.
+  2. **params** will be used for both runned tests. So if python method gets
+     some other parameters, then will be better to split test on two different
+     definitions.
+
 - result
    Result of execution of "sql" or "sql_check" in JSON format
 
@@ -192,7 +204,31 @@ optional keys:
 python_tests
 ~~~~~~~~~~~~
 
-This feature does not supported by now.
+required keys:
+
+- method
+   Defines method in Model class for testing. It should be Python imported
+   object.
+
+- result
+   Result of execution of "sql" or "sql_check" in JSON format
+
+- db
+  Name of DB for testing, which was specified via "-d" CLI option
+
+optional keys:
+
+- check_sql
+   Defines 'sql' request for checking request specified in section `sql`.
+- params
+   List of paramaters which will be inserted in the "sql" request.
+- parent
+   In case, when some test has the same sql request but with different
+   parameters this section can be used for minimization copy-paste. Using this
+   option will create new test with copy of parameters from paretn test case.
+- cleanup
+   Option for 'sql' request which remove data created by execution first 'sql'
+   query.
 
 Test case extras
 ----------------
