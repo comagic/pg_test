@@ -6,6 +6,7 @@ import os
 import json
 import atexit
 from db_test import test_case as tc
+from db_test import validator
 from db_test.dbms import DBMS
 
 
@@ -58,8 +59,8 @@ class TestRunner(ProcessMixin):
             self.log("red| There is no available tests. Execution is canceled")
             sys.exit()
 
-        validator = tc.Validator(self.tests)
-        ok_tests, failed_tests = validator.validate()
+        _validator = validator.Validator(self.tests)
+        ok_tests, failed_tests = _validator.validate()
         for t_name, errs in failed_tests:
             errs_msg = '\n - '.join(errs)
             self.log("%s red|:\n - %s" % (t_name, errs_msg))
