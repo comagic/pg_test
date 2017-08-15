@@ -1,3 +1,4 @@
+=========================
 Tool for testing db stuff
 =========================
 
@@ -161,19 +162,24 @@ More examples are available in repository in directory: "examples".
 
 Tests have schema of definition, which is described below.
 
-db_tests
-~~~~~~~~
-
-required keys:
+required keys
+~~~~~~~~~~~~~
 
 - sql
    Defines 'sql' request for testing.
 
 - method
-   *Used for tests from Python code.*
+   **Used for tests from Python code. Implemented only validation.
+     Test execution will be added later.**
    String with full path for accesing method of class to work with DB. It has
    format: "<path_to_module_with_db_class>.<db_class>.<method_name>". For
    example: "comagic_asi.sync_worker.model.model.Model.get_ym_call_data"
+
+- result
+   Result of execution of "sql" or "sql_check" in JSON format
+
+- db
+   Name of DB for testing, which was specified via "-d" CLI option
 
 **NOTE: There are to special requirements for keys mentioned above:**
   1. **sql** can be used in the same time with **method**. In this case two
@@ -182,13 +188,8 @@ required keys:
      some other parameters, then will be better to split test on two different
      definitions.
 
-- result
-   Result of execution of "sql" or "sql_check" in JSON format
-
-- db
-  Name of DB for testing, which was specified via "-d" CLI option
-
-optional keys:
+optional keys
+~~~~~~~~~~~~~
 
 - check_sql
    Defines 'sql' request for checking request specified in section `sql`.
@@ -212,7 +213,6 @@ Some tests may require some specific data types on input. For example it can be
 datetime or JSON object.
 Such issues should be solved by using python libriraies. Snippet below
 demostrates it:
-
 
 .. code-block:: python
 
