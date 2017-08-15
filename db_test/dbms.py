@@ -208,3 +208,13 @@ class DBMS:
                 self.log('yellow| %s', con.notices.pop())
             cur.close()
         return res
+
+    def db_credentials(self):
+        ''' Returns list of createndials for connecting to Test DB'''
+        data={
+            'host': self.host,
+            'port': self.port,
+            'ext_db_name': self.ext_name,
+            'db_cons': self.dbs
+        }
+        return data

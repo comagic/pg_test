@@ -168,25 +168,11 @@ required keys
 - sql
    Defines 'sql' request for testing.
 
-- method
-   **Used for tests from Python code. Implemented only validation.
-     Test execution will be added later.**
-   String with full path for accesing method of class to work with DB. It has
-   format: "<path_to_module_with_db_class>.<db_class>.<method_name>". For
-   example: "comagic_asi.sync_worker.model.model.Model.get_ym_call_data"
-
 - result
    Result of execution of "sql" or "sql_check" in JSON format
 
 - db
    Name of DB for testing, which was specified via "-d" CLI option
-
-**NOTE: There are to special requirements for keys mentioned above:**
-  1. **sql** can be used in the same time with **method**. In this case two
-     tests (with `db-` and `python-` prefixes) will be run.
-  2. **params** will be used for both runned tests. So if python method gets
-     some other parameters, then will be better to split test on two different
-     definitions.
 
 optional keys
 ~~~~~~~~~~~~~
@@ -239,3 +225,16 @@ demostrates it:
             'result': [789],
         }
     ]
+
+Run tests from python
+---------------------
+
+Different services have different approaches to work with DB:
+
+- Use different paramaters for initialization
+- Use synchronous and asynchronous methods
+- May requires different way for initialization
+
+In light of issues mentioned above common implementation of tests is not
+possible. So the alternative solution is implementation plug-in approach, which
+is described below.

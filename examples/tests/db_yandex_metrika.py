@@ -5,7 +5,6 @@ tests = [
     ('test_get_yandex_metrika_clients_with_params1', {
         'db': 'comagic',
         'sql': "select * from ppc.get_yandex_metrika_clients(%(app_id)s, %(site_id)s)",
-        'method': "comagic_asi.sync_worker.model.model.Model.get_ym_clients",
         'params': {
             'app_id': 1103,
             'site_id': 25187
@@ -28,7 +27,6 @@ tests = [
     ('test_get_yandex_metrika_clients_no_params', {
         'db': 'comagic',
         'sql': "select * from ppc.get_yandex_metrika_clients()",
-        'method': "comagic_asi.sync_worker.model.model.Model.get_ym_clients",
         'result': [
             {'site_id': 2400, 'app_id': 1103, 'access_token': 'auth1', 'counter_id': 7766, 'counter_ext_id': '36790255'},
             {'site_id': 3479, 'app_id': 1103, 'access_token': 'auth2', 'counter_id': 6250, 'counter_ext_id': '29393210'},
@@ -43,7 +41,6 @@ tests = [
     ('test_get_ym_call_data', {
         'db': 'comagic',
         'sql': "select * from ppc.get_ym_call_data(%(app_id)s, %(site_id)s, %(report_dates)s)",
-        'method': "comagic_asi.sync_worker.model.model.Model.get_ym_call_data",
         'params': {
             'app_id': 1103,
             'site_id': 2400,
@@ -56,7 +53,6 @@ tests = [
         'sql': ("select * from ppc.get_yandex_metrika_session("
                 "           %(app_id)s, %(site_id)s, %(start_time)s, "
                 "           %(url)s, %(screen)s)"),
-        'method': "comagic_asi.sync_worker.model.model.Model.get_ym_session",
         'params': {
             'app_id': 1103,
             'site_id': 2400,

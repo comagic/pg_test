@@ -1,4 +1,3 @@
-# -*- coding:utf-8 -*-
 class TestCase:
     def __init__(self, test, name, data):
         self.test = test
@@ -27,11 +26,12 @@ class TestCase:
             'db_name': self.data['db'],
             'query': self.data['sql']
         }
-        if self.data.get('params'):
-            kwargs.update(self.data['params'])
-        res = self.test.dbms.sql_execute(**kwargs)
-        if self.test.dbms.test_error:
-            return ("red| Failed\n%s" % self.test.dbms.test_err_msg)
+        if 'sql' in self.data:
+            if self.data.get('params'):
+                kwargs.update(self.data['params'])
+            res = self.test.dbms.sql_execute(**kwargs)
+            if self.test.dbms.test_error:
+                return ("red| Failed\n%s" % self.test.dbms.test_err_msg)
 
         if 'check_sql' in self.data:
             check_kwargs = {

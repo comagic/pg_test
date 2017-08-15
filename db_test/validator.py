@@ -17,7 +17,6 @@ class TestKey:
 
 
 schema = [
-    TestKey('method', check='method_check'),
     TestKey('sql', required=True),
     TestKey('result', required=True, _type='any'),
     TestKey('db', required=True),
@@ -86,30 +85,6 @@ class Validator:
                                  errs=errs)
         return errs
 
-    def method_check(self, name, data, errs):
-        method_path = data.get('method')
-        module, cls, method = method_path.rsplit('.', 2)
-        try:
-            mod = import_module(module)
-        except Exception as e:
-            errs.append("Error to import module '%s': %s" % (module, e))
-
-        if getattr(mod, cls):
-            if getattr(getattr(mod, cls), method):
-                if not callable(getattr(getattr(mod, cls), method)):
-                    errs.append(
-                        "Method '%s' is not callable." % method
-                    )
-            else:
-                errs.append(
-                    "There is no method '%s' in class '%s'." % (method, cls)
-                )
-
-        else:
-            errs.append(
-                "There is no class '%s' in module '%s'." % (cls, module)
-            )
-
     def params_check(self, name, data, errs):
         params = data.get('params')
         if 'sql' in data:
@@ -119,18 +94,8 @@ class Validator:
                 errs.append(
                     "'params' can be substituted to the 'sql' command."
                 )
-        if 'method' in data:
-            mod, cls, method = data['method'].rsplit('.', 2)
-            module = import_module(mod)
-            f_keys = getargspec(getattr(getattr(module, cls), method)).args
-            # remove 'self' from args
-            if set(f_keys[1:]) - set(params.keys()):
-                errs.append(
-                    ("'params' can not be substituted to the 'method' command."
-                     "\n\nExpected: \n %s \n \nActual: \n %s" %
-                     (set(f_keys[1:]),  set(params.keys())))
-                )
 
+    # TODO add support for multi inheritance with removing parent name
     def parent_check(self, name, data, errs):
         parent = data.get('parent')
         if parent in self.tests:
