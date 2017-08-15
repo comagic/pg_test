@@ -79,9 +79,8 @@ class TestRunner(ProcessMixin):
         except Exception as e:
             self.log("red| Can't load file: %s", file_name)
             raise
-        # TODO rename db_tests to tests!!!
-        if hasattr(test_file, 'db_tests'):
-            self.tests.extend(test_file.db_tests)
+        if hasattr(test_file, 'tests'):
+            self.tests.extend(test_file.tests)
         if hasattr(test_file, 'python_tests'):
             self.python_tests.extend(test_file.python_tests)
 

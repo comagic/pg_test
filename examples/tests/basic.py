@@ -1,4 +1,4 @@
-db_tests = [
+tests = [
     ('test_country_code', {
         'db': 'comagic',
         'sql': "select * from public.country where id=%(_id)s",

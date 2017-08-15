@@ -1,5 +1,7 @@
 import json
-db_tests = [
+
+
+tests = [
     ('test_get_events', {
         'db': 'comagic',
         'sql': "select * from analytics.get_events(%(app_id)s, %(site_id)s, %(engine)s)",

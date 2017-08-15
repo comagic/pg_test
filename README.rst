@@ -19,14 +19,16 @@ How to start
 Optionally prepare virtualenv for isolated test environment or install
 dependencies to root system.
 
-.. code-block::
+.. code-block:: bash
+
     sudo apt-get install virtualenv
     vistualenv test_db
     source test_db/bin/activate
 
 Install dependencies and db_test:
 
-.. code-block::
+.. code-block:: bash
+
     git clone git@git.dev.uiscom.ru:tools/pg_import.git
     cd pg_import
     # Manually Apply diff from https://git.dev.uiscom.ru/tools/pg_import/merge_requests/1
@@ -39,7 +41,8 @@ Install dependencies and db_test:
 
 Check that tools were installed. Execute follow commands:
 
-.. code-block::
+.. code-block:: bash
+
     db_test --help
     pg_import --help
 
@@ -56,7 +59,7 @@ Local testing with Docker
 cluster. These files are available in directory scripts/docker_postgres.
 To run it just execute the following commands from **db_test** directory:
 
-.. code-block::
+.. code-block:: bash
 
     # Install docker local
     # sudo apt-get install docker.io docker
@@ -66,7 +69,7 @@ To run it just execute the following commands from **db_test** directory:
 
 Then run examples from **db_test** repository with command:
 
-.. code-block::bash
+.. code-block:: bash
 
    db_test -u -t examples/ -d comagic:../comagic_db -h localhost -p 5432
 
@@ -120,15 +123,13 @@ data in DB for testing. It can be some examples of real data or copy from
 production DB.
 
 "tests" contains python files with definitions of test cases in JSON format.
-Test cases have to be defined as one of two allowed options:
-* db_tests
-* python_tests
+Test cases have to be defined via variable **tests**.
 
 Following example demonstrates how test definition can look:
 
 .. code-block:: python
 
-    db_tests = [
+    tests = [
         'test_name1': {
             'db': "test_db",
             'sql': "select * from tt where id = %(p1)s and val = %(p2)s",
@@ -158,7 +159,7 @@ the last will be fetched and tested.**
 
 More examples are available in repository in directory: "examples".
 
-Each type of test has his own schema of definition.
+Tests have schema of definition, which is described below.
 
 db_tests
 ~~~~~~~~
@@ -169,6 +170,7 @@ required keys:
    Defines 'sql' request for testing.
 
 - method
+   *Used for tests from Python code.*
    String with full path for accesing method of class to work with DB. It has
    format: "<path_to_module_with_db_class>.<db_class>.<method_name>". For
    example: "comagic_asi.sync_worker.model.model.Model.get_ym_call_data"
@@ -190,42 +192,15 @@ optional keys:
 
 - check_sql
    Defines 'sql' request for checking request specified in section `sql`.
+
 - params
    List of paramaters which will be inserted in the "sql" request.
+
 - parent
    In case, when some test has the same sql request but with different
    parameters this section can be used for minimization copy-paste. Using this
    option will create new test with copy of parameters from paretn test case.
-- cleanup
-   Option for 'sql' request which remove data created by execution first 'sql'
-   query.
 
-
-python_tests
-~~~~~~~~~~~~
-
-required keys:
-
-- method
-   Defines method in Model class for testing. It should be Python imported
-   object.
-
-- result
-   Result of execution of "sql" or "sql_check" in JSON format
-
-- db
-  Name of DB for testing, which was specified via "-d" CLI option
-
-optional keys:
-
-- check_sql
-   Defines 'sql' request for checking request specified in section `sql`.
-- params
-   List of paramaters which will be inserted in the "sql" request.
-- parent
-   In case, when some test has the same sql request but with different
-   parameters this section can be used for minimization copy-paste. Using this
-   option will create new test with copy of parameters from paretn test case.
 - cleanup
    Option for 'sql' request which remove data created by execution first 'sql'
    query.

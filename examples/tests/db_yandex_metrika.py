@@ -1,6 +1,7 @@
 from datetime import datetime
 
-db_tests = [
+
+tests = [
     ('test_get_yandex_metrika_clients_with_params1', {
         'db': 'comagic',
         'sql': "select * from ppc.get_yandex_metrika_clients(%(app_id)s, %(site_id)s)",
