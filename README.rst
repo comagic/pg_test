@@ -118,7 +118,7 @@ subdirectories:
 * data
 * tests
 
-Where "data" contains subdirectories with name equals `db_name` specified via
+Where "data" contains subdirectories with name equals *db_name* specified via
 "-d" option. These subdirectories have files with sql commands for creating
 data in DB for testing. It can be some examples of real data or copy from
 production DB.
@@ -178,7 +178,7 @@ optional keys
 ~~~~~~~~~~~~~
 
 - check_sql
-   Defines 'sql' request for checking request specified in section `sql`.
+   Defines 'sql' request for checking request specified in section *sql*.
 
 - params
    List of paramaters which will be inserted in the "sql" request.
@@ -187,7 +187,7 @@ optional keys
    In case, when some test has the same sql request but with different
    parameters this section can be used for minimization copy-paste. Using this
    option will create new test with copy of parameters from parent test case.
-   **NOTE**: `parent` now supports several levels of inheritance. See details
+   **NOTE**: *parent* now supports several levels of inheritance. See details
    in **Inheritance** section.
 
 - cleanup
@@ -231,8 +231,8 @@ demostrates it:
 Inheritance
 -----------
 
-Using **parent** option allows to `copy-paste` some options from test specified
-in this option. `db_test` allows to have deep inheritance, when A is a parent
+Using **parent** option allows to *copy-paste* some options from test specified
+in this option. *db_test* allows to have deep inheritance, when A is a parent
 of B, B is a parent of C, etc. In such case test's options will be overwritten
 in the following order:
 - Options of the B test case will overwrite options of the A test case.
@@ -273,9 +273,9 @@ in the following order:
 According example above:
 
 - **test_name4** will run totally the same test as **test_name1**.
-- **test_name3** will use `params` from **test_name2**.
-- **test_name2** will use `sql` from **test_name1**.
-- All tests except **test_name1** will use `db` mentioned in **test_name1**.
+- **test_name3** will use *params* from **test_name2**.
+- **test_name2** will use *sql* from **test_name1**.
+- All tests except **test_name1** will use *db* mentioned in **test_name1**.
 
 Run tests from python
 ---------------------
