@@ -4,12 +4,26 @@ Tool for testing db stuff
 
 db_test is a tool for testing DB, DB methods and DB methods from python code.
 
+
+Sections
+--------
+
+- `Introduction`_
+- `How to start`_
+- `Local testing with Docker`_
+- `CLI commands`_
+- `Test Case Definition`_
+- `Test case extras`_
+- `Inheritance`_
+- `Run tests from python`_
+
 Introduction
 ------------
 
 db_test CLI tool allows to run test against some db.
 
 How it works:
+
 - loads files with test scenarios and validate them
 - create DB from repository with DB files
 - run tests against created DB
@@ -17,7 +31,7 @@ How it works:
 How to start
 ------------
 
-Optionally prepare virtualenv for isolated test environment or install
+Optionally prepare *virtualenv* for isolated test environment or install
 dependencies to root system.
 
 .. code-block:: bash
@@ -40,7 +54,7 @@ Install dependencies and db_test:
     pip install -r requirements
     pip install -e .
 
-Check that tools were installed. Execute follow commands:
+Check that necessary tools were installed. Execute the following commands:
 
 .. code-block:: bash
 
@@ -50,8 +64,8 @@ Check that tools were installed. Execute follow commands:
 After installation, tests can be run from examples directory on local machine
 by using Postgress cluster installed in Docker or on some remote Postgress
 cluster. The section below describes preparation steps for creating and running
-docker container locally. In case if using some other Posgres cluster, it can
-be skipped.
+docker container locally. In case if you plan to use some other Posgres cluster,
+it can be skipped.
 
 Local testing with Docker
 -------------------------
