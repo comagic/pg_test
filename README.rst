@@ -4,7 +4,6 @@ Tool for testing db stuff
 
 db_test is a tool for testing DB, DB methods and DB methods from python code.
 
-
 Sections
 --------
 

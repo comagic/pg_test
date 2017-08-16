@@ -39,9 +39,9 @@ class TestRunner(ProcessMixin):
         # Separate variable for runned tests
         self.correct_tests = []
         self.exts = {}
+        self.dbms = DBMS(self, self.args)
 
     def prepare_db(self):
-        self.dbms = DBMS(self, self.args)
         if not self.save_db:
             # TODO cleanup for DB move to upper level
             atexit.register(self.dbms.clean_all)
@@ -67,11 +67,11 @@ class TestRunner(ProcessMixin):
 
         if not ok_tests:
             self.log("red| Error: There is no correctly defined tests. "
-                     "Execution is canceled")
+                     "Execution is canceled.")
             sys.exit()
         # sort by name to make tests order predicted
         for t_name, t_data in sorted(ok_tests, key=lambda x: x[0]):
-            t = tc.TestCase(self, t_name, t_data)
+            t = tc.TestCase(self.dbms, t_name, t_data)
             self.correct_tests.append(t)
 
     def import_tests(self, file_name):
