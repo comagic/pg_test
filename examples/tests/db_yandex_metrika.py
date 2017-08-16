@@ -3,7 +3,7 @@ from datetime import datetime
 
 tests = [
     ('test_get_yandex_metrika_clients_with_params1', {
-        'db': 'comagic',
+        'parent': 'test_get_yandex_metrika_clients_no_params',
         'sql': "select * from ppc.get_yandex_metrika_clients(%(app_id)s, %(site_id)s)",
         'params': {
             'app_id': 1103,
@@ -14,7 +14,6 @@ tests = [
         ]
     }),
     ('test_get_yandex_metrika_clients_with_params2', {
-        'db': 'comagic',
         'parent': 'test_get_yandex_metrika_clients_with_params1',
         'params': {
             'app_id': 1103,
@@ -23,6 +22,14 @@ tests = [
         'result': [
             {'site_id': 2400, 'app_id': 1103, 'access_token': 'auth1', 'counter_id': 7766, 'counter_ext_id': '36790255'}
         ]
+    }),
+    ('test_get_yandex_metrika_clients_no_data', {
+        'parent': 'test_get_yandex_metrika_clients_with_params2',
+        'params': {
+            'app_id': 777,
+            'site_id': 777
+        },
+        'result': None
     }),
     ('test_get_yandex_metrika_clients_no_params', {
         'db': 'comagic',

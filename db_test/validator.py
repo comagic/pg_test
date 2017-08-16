@@ -95,20 +95,17 @@ class Validator:
                     "'params' can be substituted to the 'sql' command."
                 )
 
-    # TODO add support for multi inheritance with removing parent name
     def parent_check(self, name, data, errs):
         parent = data.get('parent')
         if parent in self.tests:
             # hidden update test according parent link
             if 'parent' in self.tests[parent]:
-                errs.append(
-                    "Multi inheritance is not supported for now. "
-                    "Use another parent."
-                )
-            else:
-                new_data = copy.deepcopy(self.tests[parent])
-                new_data.update(data)
-                self.tests[name] = new_data
+                self.parent_check(parent, self.tests[parent], errs)
+            new_data = copy.deepcopy(self.tests[parent])
+            # remove parent for resolved test
+            data.pop('parent')
+            new_data.update(data)
+            self.tests[name] = new_data
         else:
             errs.append(
                 "Parent - '%s' is not presented in list of tests." % parent

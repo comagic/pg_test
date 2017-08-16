@@ -186,7 +186,9 @@ optional keys
 - parent
    In case, when some test has the same sql request but with different
    parameters this section can be used for minimization copy-paste. Using this
-   option will create new test with copy of parameters from paretn test case.
+   option will create new test with copy of parameters from parent test case.
+   **NOTE**: `parent` now supports several levels of inheritance. See details
+   in **Inheritance** section.
 
 - cleanup
    Option for 'sql' request which remove data created by execution first 'sql'
@@ -205,7 +207,7 @@ demostrates it:
     import json
     import datetime
 
-    db_tests = [
+    tests = [
         'test_name1': {
             'db': "test_db",
             'sql': "select * from tt where start_date = %(p1)s and val = %(p2)s",
@@ -225,6 +227,55 @@ demostrates it:
             'result': [789],
         }
     ]
+
+Inheritance
+-----------
+
+Using **parent** option allows to `copy-paste` some options from test specified
+in this option. `db_test` allows to have deep inheritance, when A is a parent
+of B, B is a parent of C, etc. In such case test's options will be overwritten
+in the following order:
+- Options of the B test case will overwrite options of the A test case.
+- Options of the C test case will overwrite options of the B test case.
+- The last will be applied options of the current test case.
+
+.. code-block:: python
+
+    tests = [
+        'test_name1': {
+            'db': "test_db",
+            'sql': "select * from tt where start_date = %(p1)s and val = %(p2)s",
+            'params': {
+                'p1': 'val1',
+                'p2': 321,
+            },
+            'result': [1,2,3],
+        },
+        'test_name2': {
+            'parent': 'test_name1',
+            'params': {
+                'p1': 789,
+                'p2': 321,
+            },
+            'result': [789],
+        },
+        'test_name3': {
+            'parent': 'test_name2',
+            'sql': "select * from dd where key1 = %(p1)s and key2 = %(p2)s",
+            'result': [111],
+        },
+        'test_name4': {
+            'parent': 'test_name1',
+        }
+    ]
+
+
+According example above:
+
+- **test_name4** will run totally the same test as **test_name1**.
+- **test_name3** will use `params` from **test_name2**.
+- **test_name2** will use `sql` from **test_name1**.
+- All tests except **test_name1** will use `db` mentioned in **test_name1**.
 
 Run tests from python
 ---------------------

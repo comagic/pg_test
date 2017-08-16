@@ -210,7 +210,7 @@ class DBMS:
         return res
 
     def db_credentials(self):
-        ''' Returns list of createndials for connecting to Test DB'''
+        ''' Returns list of createndials for connecting to Test DB '''
         data={
             'host': self.host,
             'port': self.port,
