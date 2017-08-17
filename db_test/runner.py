@@ -1,10 +1,8 @@
 # -*- coding:utf-8 -*-
 from functools import reduce
-import itertools
 import inspect
 import sys
 import os
-import json
 import atexit
 from db_test import adapter
 from db_test import test_case as tc
@@ -19,6 +17,7 @@ colors = {
     'blue|': '\033[36m',
     'default|': '\033[0m'
 }
+
 
 class ProcessMixin:
     def log(self, message, *args):

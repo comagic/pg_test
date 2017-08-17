@@ -14,7 +14,7 @@ class TestCase:
                 'db_name': self.data['db'],
                 'query': self.data['cleanup']
             }
-            res = self.dbms.sql_execute(**kwargs)
+            self.dbms.sql_execute(**kwargs)
             if self.dbms.test_error:
                 return ("red| Cleanup failed\n%s" %
                         self.dbms.test_err_msg)

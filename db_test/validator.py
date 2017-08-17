@@ -1,6 +1,4 @@
 import copy
-from importlib import import_module
-from inspect import getargspec
 
 
 class TestKey:
@@ -60,8 +58,8 @@ class Validator:
         # check types of keys
         for key in schema:
             if test_data.get(key.name):
-                if (key._type != type(test_data.get(key.name))
-                        and key._type != 'any'):
+                if ((key._type != 'any'
+                     and not isinstance(test_data.get(key.name), key._type))):
                     errs.append(
                         "Type of the key '%s' is incorrect. Expected - %s, "
                         "actual - %s" % (key.name, key._type,

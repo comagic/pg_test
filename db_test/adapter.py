@@ -9,5 +9,4 @@ class Adapter:
 
     def assertEqual(self, expected, actual):
         assert expected == actual, ("Expected:\n %s \n\n does not match "
-                                     "Actual:\n %s" % (expected, actual))
-
+                                    "Actual:\n %s" % (expected, actual))

@@ -8,7 +8,6 @@ import sys
 import tempfile
 
 from pg_import import executor
-from db_test import test_case
 
 
 time_format = '%Y-%m-%d %h:%M:%s'
@@ -21,17 +20,21 @@ refresh_seq = """
       s integer;
     begin
       for r in
-        select dep.deptype, cl.relname, att.attname, nsc.nspname, seq.relname as seqname, nss.nspname as seqnsp
+        select dep.deptype, cl.relname, att.attname, nsc.nspname,
+               seq.relname as seqname, nss.nspname as seqnsp
           from pg_class seq
           join pg_namespace nss ON seq.relnamespace = nss.oid
           join pg_depend dep on dep.objid = seq.oid
           join pg_class cl ON dep.refobjid = cl.oid
-          join pg_attribute att ON dep.refobjid=att.attrelid AND dep.refobjsubid=att.attnum
+          join pg_attribute att ON dep.refobjid=att.attrelid AND
+                dep.refobjsubid=att.attnum
           join pg_namespace nsc ON cl.relnamespace=nsc.oid
          where seq.relkind = 'S' and deptype = 'a'
       loop
-        execute format('select max(%%I) from %%I.%%I', r.attname, r.nspname, r.relname) into t;
-        execute format('select last_value from %%I.%%I', r.seqnsp, r.seqname) into s;
+        execute format('select max(%%I) from %%I.%%I', r.attname,
+                       r.nspname, r.relname) into t;
+        execute format('select last_value from %%I.%%I', r.seqnsp,
+                       r.seqname) into s;
 
         if t <> s then
           perform setval(r.seqnsp ||'.'||r.seqname, t, true);
@@ -69,8 +72,12 @@ class DBMS:
         self.ext_name = time.strftime('_test_%Y%m%d%H%M%S')
         self.dbs = dict([d.split(':') for d in self.db_dirs])
         self.db_connections = {}
-        self.db_connections['sys'] = psycopg2.connect(dbname='postgres', host=self.host, port=self.port, user='postgres')
-        self.db_connections['sys'].set_isolation_level(psycopg2.extensions.ISOLATION_LEVEL_AUTOCOMMIT)
+        self.db_connections['sys'] = psycopg2.connect(dbname='postgres',
+                                                      host=self.host,
+                                                      port=self.port,
+                                                      user='postgres')
+        self.db_connections['sys'].set_isolation_level(
+            psycopg2.extensions.ISOLATION_LEVEL_AUTOCOMMIT)
         self.test_error = False
         self.test_err_msg = "green| No error"
 
@@ -81,7 +88,8 @@ class DBMS:
         for db_name in self.dbs:
             try:
                 self.log('green| Droping db %s', db_name)
-                self.sql_execute('sys', 'drop database %s' % self.ext_db_name(db_name))
+                self.sql_execute(
+                    'sys', 'drop database %s' % self.ext_db_name(db_name))
             except psycopg2.ProgrammingError as e:
                 print("Error: Drop DB is failed, due to: %s" % e)
 
@@ -130,12 +138,12 @@ class DBMS:
 
     def run_pysql_commands(self, f_name, ext_db_name):
         ''' Execute cammand in subprocess to handle Errors '''
-        command = ('psql -f %(f_name)s -U postgres -h %(host)s -p %(port)s '
-                   '%(ext_db_name)s > /dev/null' % {'f_name': f_name,
-                                                    'host': self.host,
-                                                    'port': self.port,
-                                                    'ext_db_name': ext_db_name}
-        )
+        command = (
+            'psql -f %(f_name)s -U postgres -h %(host)s -p %(port)s '
+            '%(ext_db_name)s > /dev/null' % {'f_name': f_name,
+                                             'host': self.host,
+                                             'port': self.port,
+                                             'ext_db_name': ext_db_name})
         return subprocess.run(command, shell=True, check=True,
                               stderr=subprocess.PIPE)
 
@@ -211,7 +219,7 @@ class DBMS:
 
     def db_credentials(self):
         ''' Returns list of createndials for connecting to Test DB '''
-        data={
+        data = {
             'host': self.host,
             'port': self.port,
             'db_names': [self.ext_db_name(db_name) for db_name in self.dbs]
