@@ -1,10 +1,12 @@
 # -*- coding:utf-8 -*-
 from functools import reduce
 import itertools
+import inspect
 import sys
 import os
 import json
 import atexit
+from db_test import adapter
 from db_test import test_case as tc
 from db_test import validator
 from db_test.dbms import DBMS
@@ -32,14 +34,15 @@ class TestRunner(ProcessMixin):
         self.db_dirs = args.db_dirs
         self.is_debug = args.verbose
         self.save_db = args.save
-        self.tests_dir = os.path.join(self.test_dir, 'tests')
+        self.dbms = DBMS(self, self.args)
 
         # All tests in one variable
         self.tests = []
         # Separate variable for runned tests
-        self.correct_tests = []
+        self.validated_tests = []
         self.exts = {}
-        self.dbms = DBMS(self, self.args)
+        self.python_tests = []
+        self.python_validated_tests = []
 
     def prepare_db(self):
         if not self.save_db:
@@ -48,14 +51,18 @@ class TestRunner(ProcessMixin):
         self.dbms.build_db()
 
     def run_tests(self):
-        self.log('green| DB testing')
-        for s in self.correct_tests:
-            res = s.run()
+        self.log('green| Run DB tests')
+        for t in self.validated_tests:
+            res = t.run()
             if res:
-                self.log('blue| %s %s', s.name, res)
+                self.log('blue| %s %s', t.name, res)
+
+        self.log('green| Run python-DB tests')
+        for pt in self.python_validated_tests:
+            pt.run_tests()
 
     def validate_tests(self):
-        if not self.tests:
+        if not self.tests and not self.python_tests:
             self.log("red| There is no available tests. Execution is canceled")
             sys.exit()
 
@@ -69,10 +76,15 @@ class TestRunner(ProcessMixin):
             self.log("red| Error: There is no correctly defined tests. "
                      "Execution is canceled.")
             sys.exit()
+
         # sort by name to make tests order predicted
         for t_name, t_data in sorted(ok_tests, key=lambda x: x[0]):
             t = tc.TestCase(self.dbms, t_name, t_data)
-            self.correct_tests.append(t)
+            self.validated_tests.append(t)
+
+        for pt in self.python_tests:
+            self.python_validated_tests.append(
+                tc.PythonTests(pt, self.dbms, self.log))
 
     def import_tests(self, file_name):
         try:
@@ -80,16 +92,27 @@ class TestRunner(ProcessMixin):
         except Exception as e:
             self.log("red| Can't load file: %s", file_name)
             raise
+        self._import_db_tests(test_file)
+        self._import_python_tests(test_file)
+
+    def _import_db_tests(self, test_file):
+        ''' Load db_tests from imported file '''
         if hasattr(test_file, 'tests'):
             self.tests.extend(test_file.tests)
-        if hasattr(test_file, 'python_tests'):
-            self.python_tests.extend(test_file.python_tests)
+
+    def _import_python_tests(self, test_file):
+        ''' Load python_tests from imported file '''
+        self.python_tests.extend(
+            [cls[1] for cls in inspect.getmembers(test_file, inspect.isclass)
+             if adapter.Adapter in cls[1].__bases__]
+        )
 
     def load_tests(self):
-        ''' Parse Tests from specified directory '''
-        sys.path.append(self.tests_dir)
-        self.log("green| Loading tests from: %s", self.tests_dir)
-        for root, dirs, files in os.walk(self.tests_dir):
+        ''' Load all "*.py" files for testing '''
+        tests_dir = os.path.join(self.test_dir, 'tests')
+        sys.path.append(tests_dir)
+        self.log("green| Loading tests from: %s", tests_dir)
+        for root, dirs, files in os.walk(tests_dir):
             for f in files:
                 try:
                     f_name, ext = f.rsplit('.', 1)

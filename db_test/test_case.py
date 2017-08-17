@@ -1,3 +1,6 @@
+import inspect
+
+
 class TestCase:
     def __init__(self, dbms, name, data):
         self.dbms = dbms
@@ -49,3 +52,32 @@ class TestCase:
         else:
             return ("red| Failed\n Expected result: \n%s \ndoes not much "
                     "actual: \n%s" % (self.data['result'], res))
+
+
+class PythonTests:
+    def __init__(self, plugin_class, dbms, log):
+        self.plugin_class = plugin_class
+        self.dbms = dbms
+        self.log = log
+
+    def run_tests(self):
+        tests = [
+            t for t in inspect.getmembers(self.plugin_class,
+                                          predicate=inspect.isfunction)
+            if t[0].startswith('test_')]
+        # sort tests by name
+        tests = sorted(tests, key=lambda t: t[0])
+        creds = self.dbms.db_credentials()
+        try:
+            db_class = self.plugin_class(creds)
+        except Exception as e:
+            for test in tests:
+                self.log("blue| %s red| Failed\n %s" % (test[0], e))
+            return None
+
+        for test in tests:
+            try:
+                test[1](db_class)
+                self.log("blue| %s green| Passed" % test[0])
+            except Exception as e:
+                self.log("blue| %s red| Failed\n %s" % (test[0], e))

@@ -214,7 +214,6 @@ class DBMS:
         data={
             'host': self.host,
             'port': self.port,
-            'ext_db_name': self.ext_name,
-            'db_cons': self.dbs
+            'db_names': [self.ext_db_name(db_name) for db_name in self.dbs]
         }
         return data
