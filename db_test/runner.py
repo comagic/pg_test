@@ -5,7 +5,7 @@ import sys
 import os
 import atexit
 from db_test import adapter
-from db_test import test_case as tc
+from db_test import tests as tts
 from db_test import validator
 from db_test.dbms import DBMS
 
@@ -76,12 +76,12 @@ class TestRunner(ProcessMixin):
 
         # sort by name to make tests order predicted
         for t_name, t_data in sorted(ok_tests, key=lambda x: x[0]):
-            t = tc.DBTest(t_name, t_data, self.dbms, self.log)
+            t = tts.DBTest(t_name, t_data, self.dbms, self.log)
             self.validated_tests.append(t)
 
         for pt in self.python_tests:
             self.python_validated_tests.append(
-                tc.PythonTests(pt, self.dbms, self.log))
+                tts.PythonTests(pt, self.dbms, self.log))
 
     def import_tests(self, file_name):
         try:
