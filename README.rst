@@ -14,7 +14,7 @@ Sections
 - `Test Case Definition`_
 - `Test case extras`_
 - `Inheritance`_
-- `Run tests from python`_
+- `Run python DB tests`_
 
 Introduction
 ------------
@@ -290,8 +290,8 @@ According example above:
 - **test_name2** will use *sql* from **test_name1**.
 - All tests except **test_name1** will use *db* mentioned in **test_name1**.
 
-Run tests from python
----------------------
+Run python DB tests
+-------------------
 
 Different services have different approaches to work with DB:
 
@@ -302,3 +302,93 @@ Different services have different approaches to work with DB:
 In light of issues mentioned above common implementation of tests is not
 possible. So the alternative solution is implementation plug-in approach, which
 is described below.
+
+**db_test** runs python tests from the *\*.py* files. These tests have big
+differnece with db tests, but similar on classic Python unittests.
+
+Rules for writing python DB tests
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+- *__init__* method can be overwritten only if new will call parent
+  *__init__* method. Also new *__init__* have to expects first positional
+  parameter for getting dict with *db_credentials* from test runner methods.
+
+- Tests should be groupped in Test class inherited from **Adapter** class,
+  which is available in **db_test** repository.
+
+- Test class should contains method **init_db** with logic for initialization
+  class DB class, i.e. class with contains methods for communication with DB.
+
+- **Adapter** class contains one attribute: *self.creds*, which have to be
+  used for initializationg Db class. It includes the following options:
+  * 'host' - host with test DB
+  * 'port' - port with test DB
+  * 'db_names' - name of test DB
+  By default DB has a "user" **postgres** with empty password.
+
+- All real tests have to have prefix **test_**. All other methods without
+  prefix**db_test** will be ignored by **test_** as support methods.
+
+- For check purposes all methods have to use **assert** commands with
+  description of error, otherwise test will fail without error message.
+
+- All custom checks should contains *asserts* with error messages.
+
+- Adapter also provides build-in checks with defined error message:
+  * self.assertEqual(expected, actual), which simply compare values.
+
+
+Example below demonstrates all rules mentioned before.
+
+.. code-block:: python
+
+    from db_test import adapter
+    from comagic_asi.sync_worker.model import model
+
+    class Test(adapter.Adapter):
+        def init_db(self):
+            connection_str = (
+                "postgres://%(user)s@%(host)s:%(port)s/%(db_name)s" %
+                {'user': 'postgres',
+                 'host': self.creds['host'],
+                 'port': self.creds['port'],
+                 # choose only first, becuase we create only comagic_* db
+                 'db_name': self.creds['db_names'][0],
+                 }
+            )
+            self.m = model.Model(max_conn=1, connection_string=connection_str)
+
+        def assertRecords(self, expected, actual):
+            assert len(expected) == len(actual), (
+                "Length for expected %s is not equal to actual %s" %
+                (len(expected), len(actual)))
+            formatted_actual = [
+                    {k: getattr(val, k)  for k in val._fields}
+                    for val in actual
+            ]
+            assert expected == formatted_actual, (
+                "Expected:\n %s\ndoes not match Actual:\n %s" %
+                (expected, formatted_actual))
+
+        def test_get_yandex_metrika_clients_with_params(self):
+            expected = [
+                {'site_id': 2400, 'app_id': 1103, 'access_token': 'auth1',
+                 'counter_id': 7766, 'counter_ext_id': '36790255'}
+            ]
+            params = {
+                'app_id': 1103,
+                'site_id': 2400
+            }
+            res = self.m._get_ym_clients(**params)
+            # custom assert method
+            self.assertRecords(expected, res)
+
+        def test_get_yandex_metrika_clients_no_data(self):
+            expected = []
+            params = {
+                'app_id': 777,
+                'site_id': 777
+            }
+            res = self.m._get_ym_clients(**params)
+            # build-in assert method
+            self.assertEqual(expected, res)
