@@ -2,13 +2,15 @@ import inspect
 
 
 class DBTest:
-    def __init__(self, dbms, name, data):
+    def __init__(self, name, data, dbms, log):
         self.dbms = dbms
         self.name = name
         self.data = data
+        self.log = log
 
     def run(self):
         result = self._run()
+        # Run cleanup only if main logic is success, i.e. result is Success
         if self.data.get('cleanup') and 'green' in result:
             kwargs = {
                 'db_name': self.data['db'],
@@ -16,15 +18,16 @@ class DBTest:
             }
             self.dbms.sql_execute(**kwargs)
             if self.dbms.test_error:
-                return ("red| Cleanup failed\n%s" %
-                        self.dbms.test_err_msg)
-        return result
+                result = ("red| Cleanup failed\n%s" % self.dbms.test_err_msg)
+
+        self.log("blue| %s %s" % (self.name, result))
 
     def _run(self):
         if self.data['db'] not in self.dbms.db_connections:
             return ("yellow| There is no target DB for testing - %s. "
                     "Available DB names are: %s. Skipped." %
                     (self.data['db'], self.dbms.db_connections.keys()))
+
         kwargs = {
             'db_name': self.data['db'],
             'query': self.data['sql']
@@ -34,7 +37,7 @@ class DBTest:
                 kwargs.update(self.data['params'])
             res = self.dbms.sql_execute(**kwargs)
             if self.dbms.test_error:
-                return ("red| Failed\n%s" % self.dbms.test_err_msg)
+                return "red| Failed\n%s" % self.dbms.test_err_msg
 
         if 'check_sql' in self.data:
             check_kwargs = {
@@ -45,7 +48,7 @@ class DBTest:
                 check_kwargs.update(self.data['params'])
             res = self.dbms.sql_execute(**check_kwargs)
             if self.dbms.test_error:
-                return ("red| Failed\n%s" % self.dbms.test_err_msg)
+                return "red| Failed\n%s" % self.dbms.test_err_msg
 
         if res == self.data['result']:
             return "green| Passed"
@@ -73,11 +76,10 @@ class PythonTests:
         except Exception as e:
             for test in tests:
                 self.log("blue| %s red| Failed\n %s" % (test[0], e))
-            return None
-
-        for test in tests:
-            try:
-                test[1](db_class)
-                self.log("blue| %s green| Passed" % test[0])
-            except Exception as e:
-                self.log("blue| %s red| Failed\n %s" % (test[0], e))
+        else:
+            for test in tests:
+                try:
+                    test[1](db_class)
+                    self.log("blue| %s green| Passed" % test[0])
+                except Exception as e:
+                    self.log("blue| %s red| Failed\n %s" % (test[0], e))

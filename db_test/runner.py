@@ -52,9 +52,7 @@ class TestRunner(ProcessMixin):
     def run_tests(self):
         self.log('green| Run DB tests')
         for t in self.validated_tests:
-            res = t.run()
-            if res:
-                self.log('blue| %s %s', t.name, res)
+            t.run()
 
         self.log('green| Run python-DB tests')
         for pt in self.python_validated_tests:
@@ -78,7 +76,7 @@ class TestRunner(ProcessMixin):
 
         # sort by name to make tests order predicted
         for t_name, t_data in sorted(ok_tests, key=lambda x: x[0]):
-            t = tc.DBTest(self.dbms, t_name, t_data)
+            t = tc.DBTest(t_name, t_data, self.dbms, self.log)
             self.validated_tests.append(t)
 
         for pt in self.python_tests:
