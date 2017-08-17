@@ -119,5 +119,6 @@ class TestRunner(ProcessMixin):
                     self.log("red| Failed to parse file name %s: %s" %
                              (f_name, e))
                 if ext == 'py':
-                    self.import_tests(f_name)
+                    self.import_tests(
+                        os.path.join(root, f_name).replace('/', '.'))
         self.validate_tests()
