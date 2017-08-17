@@ -47,7 +47,6 @@ class TestRunner(ProcessMixin):
 
     def prepare_db(self):
         if not self.save_db:
-            # TODO cleanup for DB move to upper level
             atexit.register(self.dbms.clean_all)
         self.dbms.build_db()
 
