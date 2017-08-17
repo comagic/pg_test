@@ -1,9 +1,11 @@
 # -*- coding:utf-8 -*-
-from functools import reduce
-import inspect
-import sys
-import os
 import atexit
+from functools import reduce
+import importlib
+import inspect
+import os
+import sys
+
 from db_test import adapter
 from db_test import tests as tts
 from db_test import validator
@@ -85,7 +87,7 @@ class TestRunner(ProcessMixin):
 
     def import_tests(self, file_name):
         try:
-            test_file = __import__(file_name)
+            test_file = importlib.import_module(file_name)
         except Exception as e:
             self.log("red| Can't load file: %s", file_name)
             raise
