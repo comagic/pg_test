@@ -46,7 +46,7 @@ class Test(adapter.Adapter):
             {'site_id': 25187, 'app_id': 1103, 'access_token': 'auth6',
              'counter_id': 7869, 'counter_ext_id': '43993829'}
         ]
-        res = self.m._get_ym_clients()
+        res = self.m.get_ym_clients()
         self.assertRecords(expected, res)
 
     def test_get_yandex_metrika_clients_with_params1(self):
@@ -58,7 +58,7 @@ class Test(adapter.Adapter):
             'app_id': 1103,
             'site_id': 25187
         }
-        res = self.m._get_ym_clients(**params)
+        res = self.m.get_ym_clients(**params)
         self.assertRecords(expected, res)
 
     def test_get_yandex_metrika_clients_with_params2(self):
@@ -70,7 +70,7 @@ class Test(adapter.Adapter):
             'app_id': 1103,
             'site_id': 2400
         }
-        res = self.m._get_ym_clients(**params)
+        res = self.m.get_ym_clients(**params)
         self.assertRecords(expected, res)
 
     def test_get_yandex_metrika_clients_no_data(self):
@@ -79,5 +79,5 @@ class Test(adapter.Adapter):
             'app_id': 777,
             'site_id': 777
         }
-        res = self.m._get_ym_clients(**params)
+        res = self.m.get_ym_clients(**params)
         self.assertEqual(expected, res)

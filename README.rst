@@ -379,7 +379,7 @@ Example below demonstrates all rules mentioned before.
                 'app_id': 1103,
                 'site_id': 2400
             }
-            res = self.m._get_ym_clients(**params)
+            res = self.m.get_ym_clients(**params)
             # custom assert method
             self.assertRecords(expected, res)
 
@@ -389,6 +389,6 @@ Example below demonstrates all rules mentioned before.
                 'app_id': 777,
                 'site_id': 777
             }
-            res = self.m._get_ym_clients(**params)
+            res = self.m.get_ym_clients(**params)
             # build-in assert method
             self.assertEqual(expected, res)
