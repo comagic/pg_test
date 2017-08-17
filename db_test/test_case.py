@@ -1,7 +1,7 @@
 import inspect
 
 
-class TestCase:
+class DBTest:
     def __init__(self, dbms, name, data):
         self.dbms = dbms
         self.name = name
@@ -60,7 +60,7 @@ class PythonTests:
         self.dbms = dbms
         self.log = log
 
-    def run_tests(self):
+    def run(self):
         tests = [
             t for t in inspect.getmembers(self.plugin_class,
                                           predicate=inspect.isfunction)
