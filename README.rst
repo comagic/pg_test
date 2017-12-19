@@ -15,6 +15,7 @@ Sections
 - `Test case extras`_
 - `Inheritance`_
 - `Run python DB tests`_
+- `Known issues`_
 
 Introduction
 ------------
@@ -26,6 +27,8 @@ How it works:
 - loads files with test scenarios and validate them
 - create DB from repository with DB files
 - run tests against created DB
+
+Also please read `Known issues`_ section before the start.
 
 How to start
 ------------
@@ -56,7 +59,7 @@ Install dependencies and db_test:
     cd db_test
     pip install -r requirements.txt
     pip install -e .
-    
+
 
 Check that necessary tools were installed. Execute the following commands:
 
@@ -85,23 +88,25 @@ To run it just execute the following commands from **db_test** directory:
     # Build docker image
     docker build scripts/docker_postgres
     docker run -d -p 5432:5432 <image_id from output of previous command>
-    
+
+
 Clone source code of repository with DB to *comagic_db* directory. 
 It's necessary for correct work of the following command!
 
 Then run examples from **db_test** repository with command:
 
 .. code-block:: bash
-   
+
    # DB directory have to be pre-created and placed to *comgic_db* directory as
    # mentioned above
    db_test -u -t examples/ -d comagic:../comagic_db -h localhost -p 5432
-   
- **NOTE: running python (service) related tests requires installed service and
- its components. For example execution scenarios in file: 
- *examples/tests/python/python_db_yandex_metrika.py* requires installed 
- *comagic_asi*. If you want run only pure db tests, then remove or move out
- all data from *examples/tests/python/* directory.
+
+
+**NOTE: running python (service) related tests requires installed service and
+its components. For example execution scenarios in file:
+*examples/tests/python/python_db_yandex_metrika.py* requires installed
+*comagic_asi*. If you want run only pure db tests, then remove or move out
+all data from *examples/tests/python/* directory.
 
 Where:
 
@@ -408,3 +413,21 @@ Example below demonstrates all rules mentioned before.
             res = self.m.get_ym_clients(**params)
             # build-in assert method
             self.assertEqual(expected, res)
+
+
+Known issues
+------------
+
+1. pg_import by default does not have one required patch:
+   https://git.dev.uiscom.ru/tools/pg_import/merge_requests/1
+   So it have to be installed manually.
+2. Some preparation steps are done by docker scripts and have to updated
+   according new roles in DB. (It requires re-bulding docker image)
+3. pg_import wrongly translate *AS* word in data/public/country.sql file.
+   To fix it change it to *as* in your repository.
+4. File schema/amocrm/tables/account.sql contains wrong line about unknown
+   table *amocrm*. It have to be replaced on:
+
+5. Running python tests, requires installation of corresponding service and
+   its dependencies, otherwise it leads to some errors during importing Model
+   class and python DB methods.
