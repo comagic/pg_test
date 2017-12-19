@@ -36,7 +36,7 @@ dependencies to root system.
 .. code-block:: bash
 
     sudo apt-get install virtualenv
-    virtualenv test_db
+    vistualenv test_db
     source test_db/bin/activate
 
 Install dependencies and db_test:
@@ -50,7 +50,7 @@ Install dependencies and db_test:
     cd ..
     git clone git@git.dev.uiscom.ru:tools/db_test.git
     cd db_test
-    pip install -r requirements
+    pip install -r requirements.txt
     pip install -e .
 
 Check that necessary tools were installed. Execute the following commands:
