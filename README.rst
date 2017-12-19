@@ -88,7 +88,9 @@ To run it just execute the following commands from **db_test** directory:
 Then run examples from **db_test** repository with command:
 
 .. code-block:: bash
-
+   
+   # DB directory have to be pre-created
+   mkdir ../comagic_db
    db_test -u -t examples/ -d comagic:../comagic_db -h localhost -p 5432
 
 Where:
