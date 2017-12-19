@@ -45,13 +45,17 @@ Install dependencies and db_test:
 
     git clone git@git.dev.uiscom.ru:tools/pg_import.git
     cd pg_import
+    # Use the following workaround for now. It will be merged in master soon.
     # Manually Apply diff from https://git.dev.uiscom.ru/tools/pg_import/merge_requests/1
+    # git fetch origin
+    # git checkout -b fixes origin/fixes
     pip install -e .
     cd ..
     git clone git@git.dev.uiscom.ru:tools/db_test.git
     cd db_test
     pip install -r requirements.txt
     pip install -e .
+    
 
 Check that necessary tools were installed. Execute the following commands:
 
