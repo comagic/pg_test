@@ -36,7 +36,7 @@ dependencies to root system.
 .. code-block:: bash
 
     sudo apt-get install virtualenv
-    vistualenv test_db
+    virtualenv test_db
     source test_db/bin/activate
 
 Install dependencies and db_test:
