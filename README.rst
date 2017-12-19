@@ -32,11 +32,12 @@ How to start
 
 Optionally prepare *virtualenv* for isolated test environment or install
 dependencies to root system.
+**NOTE: tool requires installed python3.5 
 
 .. code-block:: bash
 
     sudo apt-get install virtualenv
-    virtualenv test_db
+    virtualenv test_db --python python3.5
     source test_db/bin/activate
 
 Install dependencies and db_test:
@@ -84,14 +85,23 @@ To run it just execute the following commands from **db_test** directory:
     # Build docker image
     docker build scripts/docker_postgres
     docker run -d -p 5432:5432 <image_id from output of previous command>
+    
+Clone source code of repository with DB to *comagic_db* directory. 
+It's necessary for correct work of the following command!
 
 Then run examples from **db_test** repository with command:
 
 .. code-block:: bash
    
-   # DB directory have to be pre-created
-   mkdir ../comagic_db
+   # DB directory have to be pre-created and placed to *comgic_db* directory as
+   # mentioned above
    db_test -u -t examples/ -d comagic:../comagic_db -h localhost -p 5432
+   
+ **NOTE: running python (service) related tests requires installed service and
+ its components. For example execution scenarios in file: 
+ *examples/tests/python/python_db_yandex_metrika.py* requires installed 
+ *comagic_asi*. If you want run only pure db tests, then remove or move out
+ all data from *examples/tests/python/* directory.
 
 Where:
 
