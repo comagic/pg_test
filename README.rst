@@ -169,23 +169,34 @@ Following example demonstrates how test definition can look:
             'db': "test_db",
             'sql': "select * from tt where id = %(p1)s and val = %(p2)s",
             'params': {
-                'p1': 123,
-                'p2': 321,
+                'p1': 1,
+                'p2': 'one',
             },
-            'result': [1,2,3],
+            'result': [{'id': 1, 'value': 'one'}],
         },
         'test_name2': {
             'parent': 'test_name1',
             'params': {
-                'p1': 789,
-                'p2': 111,
+                'p1': 2,
+                'p2': 'two',
             },
-            'result': [4,5,6],
-        }
+            'result': [{'id': 2, 'value': 'two'}],
+        },
         'test_name3': {
             'db': "test_db",
-            'sql': 'insert table tt v1 = %(p1)s',
-            'check_sql': "select * from tt"
+            'sql': "insert into tt(id, val) values (3, 'three')",
+            'check_sql': "select * from tt order by id",
+            'result': [
+              {'id': 1, 'value': 'one'}
+              {'id': 2, 'value': 'two'}
+              {'id': 3, 'value': 'three'}
+            ],
+        },
+        'test_name4': {
+            'db': "test_db",
+            'sql': 'select 1/0',
+            'expected_exception': '.*division by zero.*',
+            'result': None
         }
     ]
 
@@ -210,6 +221,11 @@ required keys
 
 optional keys
 ~~~~~~~~~~~~~
+
+- expected_exception
+   The test is considered to be passed when the regular expration
+   expected_exception matches with the message of the expected error.
+   If defined, value of required key "result" will be ignored
 
 - check_sql
    Defines 'sql' request for checking request specified in section *sql*.

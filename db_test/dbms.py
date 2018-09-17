@@ -31,9 +31,9 @@ refresh_seq = """
           join pg_namespace nsc ON cl.relnamespace=nsc.oid
          where seq.relkind = 'S' and deptype = 'a'
       loop
-        execute format('select max(%%I) from %%I.%%I', r.attname,
+        execute format('select coalesce(max(%%I), 0) from %%I.%%I', r.attname,
                        r.nspname, r.relname) into t;
-        execute format('select last_value from %%I.%%I', r.seqnsp,
+        execute format('select last_value - (not is_called)::int  from %%I.%%I', r.seqnsp,
                        r.seqname) into s;
 
         if t <> s then
@@ -61,6 +61,9 @@ class FileStub:
 
 
 class DBMS:
+    user = 'postgres'
+    application_name = 'db_test'
+
     def __init__(self, test, args):
         self.docker = args.use_docker or False
         self.test = test
@@ -72,11 +75,9 @@ class DBMS:
         self.ext_name = time.strftime('_test_%Y%m%d%H%M%S')
         self.dbs = dict([d.split(':') for d in self.db_dirs])
         self.db_connections = {}
-        self.db_connections['sys'] = psycopg2.connect(dbname='postgres',
-                                                      host=self.host,
-                                                      port=self.port,
-                                                      user='postgres')
-        self.db_connections['sys'].set_isolation_level(
+        self.connect_db(
+            'sys',
+            'postgres',
             psycopg2.extensions.ISOLATION_LEVEL_AUTOCOMMIT)
         self.test_error = False
         self.test_err_msg = "green| No error"
@@ -124,7 +125,7 @@ class DBMS:
 
         try:
             # Execute all commands from the file
-            res = self.run_pysql_commands(f_name, ext_db_name)
+            res = self.run_psql_commands(f_name, ext_db_name)
         except Exception as e:
             os.remove(f_name)
             raise e
@@ -132,17 +133,18 @@ class DBMS:
         if res.stderr:
             self.log("red| Error during execution command: %s. Temporary file "
                      "with DB data is available by path: %s" %
-                     (res.stderr, f_name))
+                     (res.stderr.decode(), f_name))
             sys.exit()
         os.remove(f_name)
 
-    def run_pysql_commands(self, f_name, ext_db_name):
+    def run_psql_commands(self, f_name, ext_db_name):
         ''' Execute cammand in subprocess to handle Errors '''
         command = (
-            'psql -f %(f_name)s -U postgres -h %(host)s -p %(port)s '
+            'psql -f %(f_name)s -U %(user)s -h %(host)s -p %(port)s '
             '%(ext_db_name)s > /dev/null' % {'f_name': f_name,
                                              'host': self.host,
                                              'port': self.port,
+                                             'user': self.user,
                                              'ext_db_name': ext_db_name})
         return subprocess.run(command, shell=True, check=True,
                               stderr=subprocess.PIPE)
@@ -169,11 +171,18 @@ class DBMS:
             self.process_pg_import('post-data', db_dir, ext_db_name)
 
             self.log('green| DB connecting %s', db_name)
-            self.db_connections[db_name] = psycopg2.connect(dbname=ext_db_name,
-                                                            host=self.host,
-                                                            port=self.port,
-                                                            user='postgres')
+            self.connect_db(db_name, ext_db_name)
             self.sql_execute(db_name, refresh_seq)
+
+    def connect_db(self, db_name, ext_db_name, isolation_level=None):
+        self.db_connections[db_name] = psycopg2.connect(dbname=ext_db_name,
+                                                        host=self.host,
+                                                        port=self.port,
+                                                        user=self.user,
+                                                        application_name=self.application_name)
+        if isolation_level is not None:
+            self.db_connections[db_name].set_isolation_level(isolation_level)
+
 
     def disconnect_db(self):
         for db_name in self.dbs:
@@ -186,7 +195,8 @@ class DBMS:
         res = None
         con = None
         self.test_error = False
-        self.test_err_msg = "green| No error"
+        self.test_err_msg = None
+        self.exception = None
         try:
             con = self.db_connections[db_name]
             cur = con.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
@@ -201,6 +211,7 @@ class DBMS:
         except (Exception, psycopg2.Error) as e:
             if con:
                 con.rollback()
+            self.test_err_msg = 'red| Exception on sql, add "-v" for detail'
             if self.test.is_debug:
                 try:
                     sql = cur.mogrify(query, query_params)
@@ -211,6 +222,7 @@ class DBMS:
                     "red| Exception on execute sql:\nyellow|%s\nred|%s: %s" %
                     (sql, e.__class__.__name__, e))
             self.test_error = True
+            self.exception  = e
         finally:
             while con.notices:
                 self.log('yellow| %s', con.notices.pop())

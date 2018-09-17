@@ -84,8 +84,10 @@ class TestRunner(ProcessMixin):
             self.python_validated_tests.append(
                 tts.PythonTests(pt, self.dbms, self.log))
 
-    def import_tests(self, file_name):
+    def import_tests(self, directory_name, file_name):
         try:
+            if not directory_name in sys.path:
+                sys.path.append(directory_name)
             test_file = importlib.import_module(file_name)
         except Exception as e:
             self.log("red| Can't load file: %s", file_name)
@@ -118,6 +120,5 @@ class TestRunner(ProcessMixin):
                     self.log("red| Failed to parse file name %s: %s" %
                              (f_name, e))
                 if ext == 'py':
-                    self.import_tests(
-                        os.path.join(root, f_name).replace('/', '.'))
+                    self.import_tests(root, f_name)
         self.validate_tests()

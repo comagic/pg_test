@@ -1,4 +1,5 @@
 import inspect
+import re
 
 
 class DBTest:
@@ -19,8 +20,7 @@ class DBTest:
             self.dbms.sql_execute(**kwargs)
             if self.dbms.test_error:
                 result = ("red| Cleanup failed\n%s" % self.dbms.test_err_msg)
-
-        self.log("blue| %s %s" % (self.name, result))
+        self.log("blue| %s %s", self.name, result)
 
     def _run(self):
         if self.data['db'] not in self.dbms.db_connections:
@@ -36,7 +36,7 @@ class DBTest:
             if self.data.get('params'):
                 kwargs.update(self.data['params'])
             res = self.dbms.sql_execute(**kwargs)
-            if self.dbms.test_error:
+            if self.dbms.test_error and not self.match_expected_exception():
                 return "red| Failed\n%s" % self.dbms.test_err_msg
 
         if 'check_sql' in self.data:
@@ -47,14 +47,21 @@ class DBTest:
             if self.data.get('params'):
                 check_kwargs.update(self.data['params'])
             res = self.dbms.sql_execute(**check_kwargs)
-            if self.dbms.test_error:
+            if self.dbms.test_error and not self.match_expected_exception():
                 return "red| Failed\n%s" % self.dbms.test_err_msg
 
+        if self.dbms.test_error and self.match_expected_exception():
+            return "green| Passed"
         if res == self.data['result']:
             return "green| Passed"
         else:
             return ("red| Failed\n Expected result: \n%s \ndoes not much "
                     "actual: \n%s" % (self.data['result'], res))
+
+    def match_expected_exception(self):
+        return self.data.get('expected_exception') and \
+               re.match(self.data.get('expected_exception'),
+                        str(self.dbms.exception).replace('\n', ' '))
 
 
 class PythonTests:

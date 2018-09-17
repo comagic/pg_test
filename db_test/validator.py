@@ -22,6 +22,7 @@ schema = [
     TestKey('params', _type=dict, check='params_check'),
     TestKey('cleanup'),
     TestKey('parent', check='parent_check'),
+    TestKey('expected_exception'),
 ]
 
 
