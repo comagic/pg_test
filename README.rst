@@ -35,7 +35,7 @@ How to start
 
 Optionally prepare *virtualenv* for isolated test environment or install
 dependencies to root system.
-**NOTE: tool requires installed python3.5 
+**NOTE: tool requires installed python3.5
 
 .. code-block:: bash
 
@@ -90,7 +90,7 @@ To run it just execute the following commands from **db_test** directory:
     docker run -d -p 5432:5432 <image_id from output of previous command>
 
 
-Clone source code of repository with DB to *comagic_db* directory. 
+Clone source code of repository with DB to *comagic_db* directory.
 It's necessary for correct work of the following command!
 
 Then run examples from **db_test** repository with command:
@@ -124,7 +124,7 @@ The block below demostrates output of CLI "help" command.
 .. code-block::
 
     db_test [--help] [-v] -d db_name:db_dir -t test_dir -h HOST -p PORT
-                   [-s] [-u]
+            [-U USERNAME] [-s] [-u]
 
     Run test
 
@@ -133,8 +133,10 @@ The block below demostrates output of CLI "help" command.
       -v, --verbose         verbose message
       -d db_name:db_dir     directory with db (made by pg_export)
       -t test_dir           directory with test definition
-      -h HOST, --host HOST  host for connect db
-      -p PORT, --port PORT  port for connect db
+      -h HOST, --host HOST  host of PostgreSQL cluster
+      -p PORT, --port PORT  port of PostgreSQL cluster
+      -U USERNAME, --username USERNAME
+                            username for connect to PostgreSQL cluster
       -s, --save            do not drop database on exit
       -u, --use-docker      use docker or some other DB
 

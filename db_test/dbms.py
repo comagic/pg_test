@@ -61,7 +61,6 @@ class FileStub:
 
 
 class DBMS:
-    user = 'postgres'
     application_name = 'db_test'
 
     def __init__(self, test, args):
@@ -70,6 +69,7 @@ class DBMS:
         self.log = self.test.log
         self.host = args.host
         self.port = args.port
+        self.username = args.username or os.environ.get('PGUSER', 'postgres')
         self.test_dir = args.test_dir
         self.db_dirs = args.db_dirs
         self.ext_name = time.strftime('_test_%Y%m%d%H%M%S')
@@ -144,7 +144,7 @@ class DBMS:
             '%(ext_db_name)s > /dev/null' % {'f_name': f_name,
                                              'host': self.host,
                                              'port': self.port,
-                                             'user': self.user,
+                                             'user': self.username,
                                              'ext_db_name': ext_db_name})
         return subprocess.run(command, shell=True, check=True,
                               stderr=subprocess.PIPE)
@@ -178,7 +178,7 @@ class DBMS:
         self.db_connections[db_name] = psycopg2.connect(dbname=ext_db_name,
                                                         host=self.host,
                                                         port=self.port,
-                                                        user=self.user,
+                                                        user=self.username,
                                                         application_name=self.application_name)
         if isolation_level is not None:
             self.db_connections[db_name].set_isolation_level(isolation_level)
