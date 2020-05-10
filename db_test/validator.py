@@ -21,9 +21,9 @@ schema = [
     TestKey('result', required=True, _type='any'),
     TestKey('db', required=True),
     TestKey('check_sql'),
+    TestKey('parent', check='parent_check'),
     TestKey('params', _type=dict, check='params_check'),
     TestKey('cleanup'),
-    TestKey('parent', check='parent_check'),
     TestKey('expected_exception'),
     TestKey('description'),
 ]
@@ -88,13 +88,13 @@ class Validator:
         return errs
 
     def params_check(self, name, data, errs):
-        params = data.get('params')
+        params = self.tests[data['id']].get('params')
         if 'sql' in data:
             try:
                 data['sql'] % params
-            except TypeError:
+            except KeyError as e:
                 errs.append(
-                    "'params' can be substituted to the 'sql' command."
+                    "Parameter %s not found in params" % e
                 )
 
     def parent_check(self, name, data, errs):
@@ -106,8 +106,13 @@ class Validator:
             new_data = copy.deepcopy(self.tests[parent])
             # remove parent for resolved test
             data.pop('parent')
+            params = None
+            if 'params' in new_data or 'params' in data:
+                params = dict(new_data.get('params', {}), **data.get('params', {}))
             new_data.update(data)
-            self.tests[name] = new_data
+            if params:
+                new_data.update({'params': params})
+            self.tests[data['id']] = new_data
         else:
             errs.append(
                 "Parent - '%s' is not presented in list of tests." % parent

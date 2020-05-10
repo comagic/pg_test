@@ -339,7 +339,10 @@ in the following order:
             'id': '3',
             'name': 'test_name3',
             'parent': '2',
-            'sql': "select * from dd where key1 = %(p1)s and key2 = %(p2)s",
+            'sql': "select * from dd where key1 = %(p1)s and key2 = %(p2)s and key3 = %(p3)s",
+            'params': {
+                'p3': 42
+            }
             'result': [111],
         },
         {
