@@ -15,9 +15,9 @@ def get_packages(dirs):
     return packages
 
 setup(name = "db_test",
-      description="uLab portal",
+      description="tool for testing DB",
       license="""uiscom license""",
-      version = "2.0",
+      version = "3.0",
       maintainer = "Dima Beloborodov",
       maintainer_email = "d.beloborodov@ulab.ru",
       url = "http://uiscom.ru",

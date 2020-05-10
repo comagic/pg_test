@@ -15,6 +15,8 @@ class TestKey:
 
 
 schema = [
+    TestKey('id', required=True),
+    TestKey('name', required=True),
     TestKey('sql', required=True),
     TestKey('result', required=True, _type='any'),
     TestKey('db', required=True),
@@ -23,13 +25,13 @@ schema = [
     TestKey('cleanup'),
     TestKey('parent', check='parent_check'),
     TestKey('expected_exception'),
+    TestKey('description'),
 ]
 
 
 class Validator:
-
     def __init__(self, tests):
-        self.tests = dict(tests)
+        self.tests = {t['id']: t for t in tests}
         if len(self.tests) != len(tests):
             raise Exception("There are name duplications in tests defintions")
         self.correct_tests = []
@@ -38,12 +40,13 @@ class Validator:
     def validate(self):
         ''' Validate test schema definition '''
 
-        for name, test_data in self.tests.items():
+        for test_id, test_data in self.tests.items():
+            name = '%s. %s' % (test_id, test_data['name'])
             errs = self.validate_schema(name, test_data)
             if errs:
                 self.broken_tests.append((name, errs))
             else:
-                self.correct_tests.append((name, self.tests[name]))
+                self.correct_tests.append((name, self.tests[test_id]))
 
         return self.correct_tests, self.broken_tests
 

@@ -167,7 +167,9 @@ Following example demonstrates how test definition can look:
 .. code-block:: python
 
     tests = [
-        'test_name1': {
+        {
+            'id': '1',
+            'name': 'first test'
             'db': "test_db",
             'sql': "select * from tt where id = %(p1)s and val = %(p2)s",
             'params': {
@@ -176,15 +178,19 @@ Following example demonstrates how test definition can look:
             },
             'result': [{'id': 1, 'value': 'one'}],
         },
-        'test_name2': {
-            'parent': 'test_name1',
+        {
+            'id': '2',
+            'name': 'second test'
+            'parent': '1',
             'params': {
                 'p1': 2,
                 'p2': 'two',
             },
             'result': [{'id': 2, 'value': 'two'}],
         },
-        'test_name3': {
+        {
+            'id': '3',
+            'name': 'third test'
             'db': "test_db",
             'sql': "insert into tt(id, val) values (3, 'three')",
             'check_sql': "select * from tt order by id",
@@ -195,6 +201,8 @@ Following example demonstrates how test definition can look:
             ],
         },
         'test_name4': {
+            'id': '4',
+            'name': 'fourth test'
             'db': "test_db",
             'sql': 'select 1/0',
             'expected_exception': '.*division by zero.*',
@@ -211,6 +219,11 @@ Tests have schema of definition, which is described below.
 
 required keys
 ~~~~~~~~~~~~~
+- id
+   Test identifier uses for ordering test before running; also may use in "parent" field
+
+- name
+   Short definition of test
 
 - sql
    Defines 'sql' request for testing.
@@ -246,6 +259,9 @@ optional keys
    Option for 'sql' request which remove data created by execution first 'sql'
    query.
 
+- description
+   detailed description of test
+
 Test case extras
 ----------------
 
@@ -260,7 +276,9 @@ demostrates it:
     import datetime
 
     tests = [
-        'test_name1': {
+        {
+            'id': '1',
+            'name': 'test_name1',
             'db': "test_db",
             'sql': "select * from tt where start_date = %(p1)s and val = %(p2)s",
             'params': {
@@ -269,7 +287,9 @@ demostrates it:
             },
             'result': [1,2,3],
         },
-        'test_name2': {
+        {
+            'id': '2',
+            'name': 'test_name2',
             'db': "test_db",
             'sql': "select tt.load_values(%(p1)s)",
             'check_sql': "select num from tt",
@@ -294,7 +314,9 @@ in the following order:
 .. code-block:: python
 
     tests = [
-        'test_name1': {
+        {
+            'id': '1',
+            'name': 'test_name1',
             'db': "test_db",
             'sql': "select * from tt where start_date = %(p1)s and val = %(p2)s",
             'params': {
@@ -303,21 +325,27 @@ in the following order:
             },
             'result': [1,2,3],
         },
-        'test_name2': {
-            'parent': 'test_name1',
+        {
+            'id': '2',
+            'name': 'test_name2',
+            'parent': '1',
             'params': {
                 'p1': 789,
                 'p2': 321,
             },
             'result': [789],
         },
-        'test_name3': {
-            'parent': 'test_name2',
+        {
+            'id': '3',
+            'name': 'test_name3',
+            'parent': '2',
             'sql': "select * from dd where key1 = %(p1)s and key2 = %(p2)s",
             'result': [111],
         },
-        'test_name4': {
-            'parent': 'test_name1',
+        {
+            'id': '4',
+            'name': 'test_name4',
+            'parent': '1',
         }
     ]
 
