@@ -203,7 +203,7 @@ class DBMS:
             cur.execute(query, query_params)
             if cur.rowcount > 0:
                 try:
-                    res = cur.fetchall()
+                    res = [dict(r) for r in cur.fetchall()]
                 except psycopg2.ProgrammingError:
                     # catch error if execute return something on "insert"
                     pass
