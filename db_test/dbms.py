@@ -214,7 +214,7 @@ class DBMS:
             self.test_err_msg = 'red| Exception on sql, add "-v" for detail'
             if self.test.is_debug:
                 try:
-                    sql = cur.mogrify(query, query_params)
+                    sql = cur.mogrify(query, query_params).decode('utf-8')
                 except Exception as ee:
                     sql = 'unpattern(%s %s)  %s' % (ee.__class__.__name__,
                                                     ee, query)
