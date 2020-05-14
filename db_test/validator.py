@@ -24,7 +24,7 @@ schema = [
     TestKey('parent', check='parent_check'),
     TestKey('params', _type=dict, check='params_check'),
     TestKey('cleanup'),
-    TestKey('expected_exception'),
+    TestKey('expected_exception', check='expected_exception_check'),
     TestKey('description'),
 ]
 
@@ -116,4 +116,11 @@ class Validator:
         else:
             errs.append(
                 "Parent - '%s' is not presented in list of tests." % parent
+            )
+
+    def expected_exception_check(self, name, data, errs):
+        actual_data = self.tests[data['id']]
+        if actual_data.get('expected_exception') and actual_data.get('check_sql'):
+            errs.append(
+                "You cannot use expected_exception and check_sql together."
             )

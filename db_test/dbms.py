@@ -13,7 +13,7 @@ from pg_import import executor
 time_format = '%Y-%m-%d %h:%M:%s'
 
 refresh_seq = """
-    do  language plpgsql $$
+    do language plpgsql $$
     declare
       r record;
       t integer;
@@ -80,7 +80,7 @@ class DBMS:
             'postgres',
             psycopg2.extensions.ISOLATION_LEVEL_AUTOCOMMIT)
         self.test_error = False
-        self.test_err_msg = "green| No error"
+        self.test_err_msg = "green|No error"
 
     def ext_db_name(self, db_name):
         return db_name + self.ext_name
@@ -88,7 +88,7 @@ class DBMS:
     def drop_db(self):
         for db_name in self.dbs:
             try:
-                self.log('green| Droping db %s', db_name)
+                self.log('green|Droping db %s', db_name)
                 self.sql_execute(
                     'sys', 'drop database %s' % self.ext_db_name(db_name))
             except psycopg2.ProgrammingError as e:
@@ -131,7 +131,7 @@ class DBMS:
             raise e
 
         if res.stderr:
-            self.log("red| Error during execution command: %s. Temporary file "
+            self.log("red|  Error during execution command: %s. Temporary file "
                      "with DB data is available by path: %s" %
                      (res.stderr.decode(), f_name))
             sys.exit()
@@ -152,25 +152,25 @@ class DBMS:
     def build_db(self):
         for db_name, db_dir in self.dbs.items():
             ext_db_name = self.ext_db_name(db_name)
-            self.log('green| Creating db %s', db_name)
+            self.log('green|Creating db %s', db_name)
             self.sql_execute('sys', 'create database %s' % ext_db_name)
-            self.log('green| Creating schema')
+            self.log('green|Creating schema')
             self.process_pg_import(
                 'pre-data', db_dir, ext_db_name,
                 extra_data="set client_min_messages to warning;")
 
-            self.log('green| Loading default data')
+            self.log('green|Loading default data')
             self.process_pg_import('data', db_dir, ext_db_name)
 
             test_data = os.path.join(self.test_dir, 'data', db_name)
             if os.path.exists(test_data):
-                self.log('green| Loading test data into database %s' % db_name)
+                self.log('green|Loading test data into database %s' % db_name)
                 self.process_pg_import('data', self.test_dir, ext_db_name)
 
-            self.log('green| Creating constraint')
+            self.log('green|Creating constraint')
             self.process_pg_import('post-data', db_dir, ext_db_name)
 
-            self.log('green| DB connecting %s', db_name)
+            self.log('green|DB connecting %s', db_name)
             self.connect_db(db_name, ext_db_name)
             self.sql_execute(db_name, refresh_seq)
 
@@ -186,7 +186,7 @@ class DBMS:
 
     def disconnect_db(self):
         for db_name in self.dbs:
-            self.log('green| DB disconnecting %s', db_name)
+            self.log('green|DB disconnecting %s', db_name)
             if self.db_connections.get(db_name):
                 self.db_connections[db_name].close()
                 del self.db_connections[db_name]
@@ -211,7 +211,7 @@ class DBMS:
         except (Exception, psycopg2.Error) as e:
             if con:
                 con.rollback()
-            self.test_err_msg = 'red| Exception on sql, add "-v" for detail'
+            self.test_err_msg = 'red|Exception on sql, add "-v" for detail'
             if self.test.is_debug:
                 try:
                     sql = cur.mogrify(query, query_params).decode('utf-8')
@@ -219,13 +219,13 @@ class DBMS:
                     sql = 'unpattern(%s %s)  %s' % (ee.__class__.__name__,
                                                     ee, query)
                 self.test_err_msg = (
-                    "red| Exception on execute sql:\nyellow|%s\nred|%s: %s" %
-                    (sql, e.__class__.__name__, e))
+                    "red|Exception on execute sql:\ndefault|  %s\nred|%s: %s" %
+                    ('\n  '.join(sql.split('\n')), e.__class__.__name__, e))
             self.test_error = True
             self.exception  = e
         finally:
             while con.notices:
-                self.log('yellow| %s', con.notices.pop())
+                self.log('yellow|    %s', con.notices.pop())
             cur.close()
         return res
 

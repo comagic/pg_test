@@ -51,17 +51,19 @@ class TestRunner(ProcessMixin):
         self.dbms.build_db()
 
     def run_tests(self):
-        self.log('green| Run DB tests')
+        if self.validated_tests:
+            self.log('green|Run DB tests:')
         for t in self.validated_tests:
             t.run()
 
-        self.log('green| Run python-DB tests')
+        if self.python_validated_tests:
+            self.log('green|Run python-DB tests:')
         for pt in self.python_validated_tests:
             pt.run()
 
     def validate_tests(self):
         if not self.tests and not self.python_tests:
-            self.log("red| There is no available tests. Execution is canceled")
+            self.log("red|  There is no available tests. Execution is canceled")
             sys.exit()
 
         _validator = validator.Validator(self.tests)
@@ -71,7 +73,7 @@ class TestRunner(ProcessMixin):
             self.log("%s red|:\n - %s" % (t_name, errs_msg))
 
         if not ok_tests:
-            self.log("red| Error: There is no correctly defined tests. "
+            self.log("red| Error:  There is no correctly defined tests. "
                      "Execution is canceled.")
             sys.exit()
 
@@ -90,7 +92,7 @@ class TestRunner(ProcessMixin):
                 sys.path.append(directory_name)
             test_file = importlib.import_module(file_name)
         except Exception as e:
-            self.log("red| Can't load file: %s", file_name)
+            self.log("red|  Can't load file: %s", file_name)
             raise
         self._import_db_tests(test_file)
         self._import_python_tests(test_file)
@@ -111,13 +113,13 @@ class TestRunner(ProcessMixin):
         ''' Load all "*.py" files for testing '''
         tests_dir = os.path.join(self.test_dir, 'tests')
         sys.path.append(tests_dir)
-        self.log("green| Loading tests from: %s", tests_dir)
+        self.log("green|Loading tests from: %s", tests_dir)
         for root, dirs, files in os.walk(tests_dir):
             for f in files:
                 try:
                     f_name, ext = f.rsplit('.', 1)
                 except ValueError as e:
-                    self.log("red| Failed to parse file name %s: %s" %
+                    self.log("red|  Failed to parse file name %s: %s" %
                              (f_name, e))
                 if ext == 'py':
                     self.import_tests(root, f_name)
