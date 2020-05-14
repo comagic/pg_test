@@ -1,5 +1,7 @@
 import inspect
 import re
+import difflib
+from wasabi import color
 
 
 class DBTest:
@@ -55,13 +57,37 @@ class DBTest:
         if res == self.data['result']:
             return "green| Passed"
         else:
-            return ("red| Failed\n Expected result: \n%s \ndoes not much "
-                    "actual: \n%s" % (self.data['result'], res))
+            return ("red|Failed\n"
+                    "yellow|expected result:\n"
+                    "default| %s\n"
+                    "yellow|does not match actual:\n"
+                    "default| %s\n"
+                    "yellow|diff:\n"
+                    "default| %s") % (self.data['result'],
+                                      res,
+                                      self.diff_strings(
+                                          str(self.data['result']),
+                                          str(res)))
 
     def match_expected_exception(self):
         return self.data.get('expected_exception') and \
                re.match(self.data.get('expected_exception'),
                         str(self.dbms.exception).replace('\n', ' '))
+
+    def diff_strings(self, a, b):
+        output = []
+        matcher = difflib.SequenceMatcher(None, a, b)
+        for opcode, a0, a1, b0, b1 in matcher.get_opcodes():
+            if opcode == "equal":
+                output.append(a[a0:a1])
+            elif opcode == "insert":
+                output.append(color(b[b0:b1], fg=16, bg="green"))
+            elif opcode == "delete":
+                output.append(color(a[a0:a1], fg=16, bg="red"))
+            elif opcode == "replace":
+                output.append(color(b[b0:b1], fg=16, bg="green"))
+                output.append(color(a[a0:a1], fg=16, bg="red"))
+        return "".join(output)
 
 
 class PythonTests:
