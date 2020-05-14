@@ -41,7 +41,7 @@ class DBTest:
             if self.dbms.test_error and not self.match_expected_exception():
                 return "red| Failed\n%s" % self.dbms.test_err_msg
 
-        if 'check_sql' in self.data:
+        if self.data.get('check_sql'):
             check_kwargs = {
                 'db_name': self.data['db'],
                 'query': self.data['check_sql']
