@@ -51,8 +51,8 @@ class DBTest:
                         "default|      %s\n"
                          "yellow|    details:\n"
                         "default|      %s") % (self.data['expected_exception'],
-                                              self.dbms.exception.diag.message_primary,
-                                              '\n     '.join(self.dbms.test_err_msg.split('\n')))
+                                               self.dbms.exception.diag.message_primary,
+                                               '\n     '.join(self.dbms.test_err_msg.split('\n')))
         if self.data.get('check_sql'):
             check_kwargs = {
                 'db_name': self.data['db'],
@@ -63,7 +63,13 @@ class DBTest:
             res = self.dbms.sql_execute(**check_kwargs)
             if self.dbms.test_error:
                 return "red| Failed\n%s" % self.dbms.test_err_msg
-        if res == self.data['result']:
+
+        if self.data.get('expected_exception'):
+            expected_res = 'expected_exception: ' + self.data['expected_exception']
+        else:
+            expected_res = self.data['result']
+
+        if res == expected_res:
             return "green| Passed"
         else:
             return ("red| Failed\n"
@@ -72,11 +78,11 @@ class DBTest:
                  "yellow|    does not match actual:\n"
                 "default|      %s\n"
                  "yellow|    diff:\n"
-                "default|      %s") % (self.data['result'],
-                                      res,
-                                      self.diff_strings(
-                                          str(self.data['result']),
-                                          str(res)))
+                "default|      %s") % (expected_res,
+                                       res,
+                                       self.diff_strings(
+                                           str(expected_res),
+                                           str(res)))
 
     def match_expected_exception(self):
         return self.data.get('expected_exception') and \
