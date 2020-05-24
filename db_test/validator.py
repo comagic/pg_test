@@ -108,7 +108,8 @@ class Validator:
             data.pop('parent')
             params = None
             if 'params' in new_data or 'params' in data:
-                params = dict(new_data.get('params', {}), **data.get('params', {}))
+                params = dict(new_data.get('params', {}),
+                              **data.get('params', {}))
             new_data.update(data)
             if params:
                 new_data.update({'params': params})
@@ -120,7 +121,8 @@ class Validator:
 
     def expected_exception_check(self, name, data, errs):
         actual_data = self.tests[data['id']]
-        if actual_data.get('expected_exception') and actual_data.get('check_sql'):
+        if actual_data.get('expected_exception') and \
+           actual_data.get('check_sql'):
             errs.append(
                 "You cannot use expected_exception and check_sql together."
             )

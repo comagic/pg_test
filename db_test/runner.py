@@ -63,7 +63,8 @@ class TestRunner(ProcessMixin):
 
     def validate_tests(self):
         if not self.tests and not self.python_tests:
-            self.log("red|  There is no available tests. Execution is canceled")
+            self.log("red|  There is no available tests. "
+                     "Execution is canceled")
             sys.exit()
 
         _validator = validator.Validator(self.tests)
@@ -88,10 +89,10 @@ class TestRunner(ProcessMixin):
 
     def import_tests(self, directory_name, file_name):
         try:
-            if not directory_name in sys.path:
+            if directory_name not in sys.path:
                 sys.path.append(directory_name)
             test_file = importlib.import_module(file_name)
-        except Exception as e:
+        except Exception:
             self.log("red|  Can't load file: %s", file_name)
             raise
         self._import_db_tests(test_file)

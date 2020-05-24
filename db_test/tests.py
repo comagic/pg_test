@@ -44,15 +44,17 @@ class DBTest:
                 elif self.match_expected_exception():
                     return "green| Passed"
                 else:
-                    return ("red| Failed\n"
-                         "yellow|    expected exception:\n"
+                    return (
+                        "red| Failed\n"
+                        "yellow|    expected exception:\n"
                         "default|      %s\n"
-                         "yellow|    does not match actual exception:\n"
+                        "yellow|    does not match actual exception:\n"
                         "default|      %s\n"
-                         "yellow|    details:\n"
-                        "default|      %s") % (self.data['expected_exception'],
-                                               self.dbms.exception.diag.message_primary,
-                                               '\n     '.join(self.dbms.test_err_msg.split('\n')))
+                        "yellow|    details:\n"
+                        "default|      %s") % (
+                            self.data['expected_exception'],
+                            self.dbms.exception.diag.message_primary,
+                            '\n     '.join(self.dbms.test_err_msg.split('\n')))
         if self.data.get('check_sql'):
             check_kwargs = {
                 'db_name': self.data['db'],
@@ -65,7 +67,8 @@ class DBTest:
                 return "red| Failed\n%s" % self.dbms.test_err_msg
 
         if self.data.get('expected_exception'):
-            expected_res = 'expected_exception: ' + self.data['expected_exception']
+            expected_res = 'expected_exception: ' + \
+                           self.data['expected_exception']
         else:
             expected_res = self.data['result']
 
@@ -73,16 +76,16 @@ class DBTest:
             return "green| Passed"
         else:
             return ("red| Failed\n"
-                 "yellow|    expected result:\n"
-                "default|      %s\n"
-                 "yellow|    does not match actual:\n"
-                "default|      %s\n"
-                 "yellow|    diff:\n"
-                "default|      %s") % (expected_res,
-                                       res,
-                                       self.diff_strings(
-                                           str(expected_res),
-                                           str(res)))
+                    "yellow|    expected result:\n"
+                    "default|      %s\n"
+                    "yellow|    does not match actual:\n"
+                    "default|      %s\n"
+                    "yellow|    diff:\n"
+                    "default|      %s") % (expected_res,
+                                           res,
+                                           self.diff_strings(
+                                               str(expected_res),
+                                               str(res)))
 
     def match_expected_exception(self):
         return self.data.get('expected_exception') and \

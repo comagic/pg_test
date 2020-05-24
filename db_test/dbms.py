@@ -31,10 +31,12 @@ refresh_seq = """
           join pg_namespace nsc ON cl.relnamespace=nsc.oid
          where seq.relkind = 'S' and deptype = 'a'
       loop
-        execute format('select coalesce(max(%%I), 0) from %%I.%%I', r.attname,
-                       r.nspname, r.relname) into t;
-        execute format('select last_value - (not is_called)::int  from %%I.%%I', r.seqnsp,
-                       r.seqname) into s;
+        execute format('select coalesce(max(%%I), 0)
+                          from %%I.%%I',
+                       r.attname, r.nspname, r.relname) into t;
+        execute format('select last_value - (not is_called)::int
+                          from %%I.%%I',
+                       r.seqnsp, r.seqname) into s;
 
         if t <> s then
           perform setval(r.seqnsp ||'.'||r.seqname, t, true);
@@ -131,8 +133,8 @@ class DBMS:
             raise e
 
         if res.stderr:
-            self.log("red|  Error during execution command: %s. Temporary file "
-                     "with DB data is available by path: %s" %
+            self.log("red|  Error during execution command: %s. Temporary file"
+                     " with DB data is available by path: %s" %
                      (res.stderr.decode(), f_name))
             sys.exit()
         os.remove(f_name)
@@ -175,14 +177,14 @@ class DBMS:
             self.sql_execute(db_name, refresh_seq)
 
     def connect_db(self, db_name, ext_db_name, isolation_level=None):
-        self.db_connections[db_name] = psycopg2.connect(dbname=ext_db_name,
-                                                        host=self.host,
-                                                        port=self.port,
-                                                        user=self.username,
-                                                        application_name=self.application_name)
+        self.db_connections[db_name] = psycopg2.connect(
+            dbname=ext_db_name,
+            host=self.host,
+            port=self.port,
+            user=self.username,
+            application_name=self.application_name)
         if isolation_level is not None:
             self.db_connections[db_name].set_isolation_level(isolation_level)
-
 
     def disconnect_db(self):
         for db_name in self.dbs:
@@ -222,7 +224,7 @@ class DBMS:
                     "red|Exception on execute sql:\ndefault|  %s\nred|%s: %s" %
                     ('\n  '.join(sql.split('\n')), e.__class__.__name__, e))
             self.test_error = True
-            self.exception  = e
+            self.exception = e
         finally:
             while con.notices:
                 self.log('yellow|    %s', con.notices.pop())

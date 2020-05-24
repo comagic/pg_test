@@ -6,13 +6,14 @@ from comagic_asi.sync_worker.model import model
 class Test(adapter.Adapter):
     def init_db(self):
         connection_str = ("postgres://%(user)s@%(host)s:%(port)s/%(db_name)s" %
-            {'user': 'postgres',
-             'host': self.creds['host'],
-             'port': self.creds['port'],
-             # choose only first, becuase we create only comagic_* db
-             'db_name': self.creds['db_names'][0],
-             }
-        )
+                          {'user': 'postgres',
+                           'host': self.creds['host'],
+                           'port': self.creds['port'],
+                           # choose only first,
+                           # becuase we create only comagic_* db
+                           'db_name': self.creds['db_names'][0],
+                           }
+                          )
         self.m = model.Model(max_conn=1, connection_string=connection_str)
 
     def assertRecords(self, expected, actual):
@@ -20,7 +21,7 @@ class Test(adapter.Adapter):
                                               "equal to actual %s" %
                                               (len(expected), len(actual)))
         formatted_actual = [
-                {k: getattr(val, k)  for k in val._fields}
+                {k: getattr(val, k) for k in val._fields}
                 for val in actual
         ]
         assert expected == formatted_actual, ("Expected:\n %s\ndoes not match "
