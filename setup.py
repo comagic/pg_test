@@ -7,7 +7,7 @@ PACKAGE_TYPE = 'pg-tools'
 PACKAGE_NAME = 'db-test'
 PACKAGE_DESC = 'simple test framework for postgresql'
 PACKAGE_LONG_DESC = 'Test framework for postgresql database (pg-export format)'
-PACKAGE_VERSION = '3.0.0'
+PACKAGE_VERSION = '3.0.1'
 
 
 class PyTest(TestCommand):
@@ -41,7 +41,9 @@ setup_requires = []
 # Что нужно для установки
 install_requires = [
     # Локальный pypi
-    'pg-import==1.0.*',
+    'pg-import==1.1.*',
+    'psycopg2',
+    'wasabi',
 ]
 
 
