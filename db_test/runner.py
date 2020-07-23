@@ -30,12 +30,12 @@ class ProcessMixin:
 
 class TestRunner(ProcessMixin):
     def __init__(self, args):
-        self.args = args
         self.test_dir = args.test_dir
         self.db_dirs = args.db_dirs
         self.is_debug = args.verbose
-        self.save_db = args.save
-        self.dbms = DBMS(self, self.args)
+        self.keep = args.keep
+        self.break_on_test = args.break_on_test
+        self.dbms = DBMS(self, args)
 
         # All tests in one variable
         self.tests = []
@@ -46,7 +46,7 @@ class TestRunner(ProcessMixin):
         self.python_validated_tests = []
 
     def prepare_db(self):
-        if not self.save_db:
+        if not self.keep:
             atexit.register(self.dbms.clean_all)
         self.dbms.build_db()
 
@@ -54,6 +54,9 @@ class TestRunner(ProcessMixin):
         if self.validated_tests:
             self.log('green|Run DB tests:')
         for t in self.validated_tests:
+            if t.data['id'] == self.break_on_test:
+                self.log('green|break on <%s>', self.break_on_test)
+                break
             t.run()
 
         if self.python_validated_tests:

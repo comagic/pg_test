@@ -123,21 +123,23 @@ The block below demostrates output of CLI "help" command.
 
 .. code-block::
 
-    db_test [--help] [-v] -d db_name:db_dir -t test_dir -h HOST -p PORT
-            [-U USERNAME] [-s] [-u]
+    usage: db_test [--help] [-v] -d DB_NAME:DB_DIR -t TEST_DIR -h HOST -p PORT
+                   [-U USERNAME] [-b TEST] [-k] [-u]
 
     Run test
 
     optional arguments:
       --help                show this help message and exit
       -v, --verbose         verbose message
-      -d db_name:db_dir     directory with db (made by pg_export)
-      -t test_dir           directory with test definition
+      -d DB_NAME:DB_DIR     directory with db (made by pg_export)
+      -t TEST_DIR           directory with test definition
       -h HOST, --host HOST  host of PostgreSQL cluster
       -p PORT, --port PORT  port of PostgreSQL cluster
       -U USERNAME, --username USERNAME
                             username for connect to PostgreSQL cluster
-      -s, --save            do not drop database on exit
+      -b TEST, --break TEST
+                            stop before TEST
+      -k, --keep            do not drop database after tests
       -u, --use-docker      use docker or some other DB
 
 By default script expects host and port from external postgress cluster.

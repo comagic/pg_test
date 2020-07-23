@@ -12,13 +12,13 @@ def main():
                             action='store_true',
                             help='verbose message')
     arg_parser.add_argument('-d',
-                            metavar='db_name:db_dir',
+                            metavar='DB_NAME:DB_DIR',
                             dest='db_dirs',
                             action='append',
                             required=True,
                             help='directory with db (made by pg_export)')
     arg_parser.add_argument('-t',
-                            metavar='test_dir',
+                            metavar='TEST_DIR',
                             dest='test_dir',
                             required=True,
                             help='directory with test definition')
@@ -31,10 +31,15 @@ def main():
     arg_parser.add_argument('-U', '--username',
                             required=False,
                             help='username for connect to PostgreSQL cluster')
-    arg_parser.add_argument('-s', '--save',
+    arg_parser.add_argument('-b', '--break',
+                            required=False,
+                            metavar='TEST',
+                            dest='break_on_test',
+                            help='stop before TEST')
+    arg_parser.add_argument('-k', '--keep',
                             required=False,
                             action='store_true',
-                            help='do not drop database on exit')
+                            help='do not drop database after tests')
     arg_parser.add_argument('-u', '--use-docker',
                             required=False,
                             action='store_true',

@@ -7,7 +7,6 @@ PACKAGE_TYPE = 'pg-tools'
 PACKAGE_NAME = 'db-test'
 PACKAGE_DESC = 'simple test framework for postgresql'
 PACKAGE_LONG_DESC = 'Test framework for postgresql database (pg-export format)'
-PACKAGE_VERSION = '3.0.1'
 
 
 class PyTest(TestCommand):
@@ -66,7 +65,7 @@ console_scripts = [
 
 setup(
     name=PACKAGE_NAME,
-    version=PACKAGE_VERSION,
+    version='0.0.0',
     description=PACKAGE_DESC,
     long_description=PACKAGE_LONG_DESC,
     url='https://git.dev.uiscom.ru/{}/{}'.format(PACKAGE_TYPE, PACKAGE_NAME),
