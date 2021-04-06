@@ -32,10 +32,10 @@ class TestRunner(ProcessMixin):
     def __init__(self, args):
         self.test_dir = args.test_dir
         self.db_dirs = args.db_dirs
-        self.is_debug = args.verbose
+        self.verbose = args.verbose
         self.keep = args.keep
         self.break_on_test = args.break_on_test
-        self.dbms = DBMS(self, args)
+        self.dbms = DBMS(self.log, args)
 
         # All tests in one variable
         self.tests = []
@@ -44,6 +44,7 @@ class TestRunner(ProcessMixin):
         self.exts = {}
         self.python_tests = []
         self.python_validated_tests = []
+        self.failed_count = 0
 
     def prepare_db(self):
         if not self.keep:
@@ -57,18 +58,31 @@ class TestRunner(ProcessMixin):
             if t.data['id'] == self.break_on_test:
                 self.log('green|break on <%s>', self.break_on_test)
                 break
-            t.run()
+            result = t.run()
+            self.failed_count += int(not result.startswith('green| Passed'))
+            if self.verbose or result.startswith('green| Passed'):
+                self.log("blue|  %s %s", t.name, result)
+            else:
+                self.log("blue|  %s| red| Failed", t.name)
+
+        if self.failed_count != 0:
+            self.log("red|%s tests failed", self.failed_count)
+            if not self.verbose:
+                self.log("red|  use -v (--verbose) for more details")
+        else:
+            self.log("green|all tests passed")
 
         if self.python_validated_tests:
             self.log('green|Run python-DB tests:')
         for pt in self.python_validated_tests:
             pt.run()
+        return int(self.failed_count != 0)
 
     def validate_tests(self):
         if not self.tests and not self.python_tests:
             self.log("red|  There is no available tests. "
                      "Execution is canceled")
-            sys.exit()
+            sys.exit(2)
 
         _validator = validator.Validator(self.tests)
         ok_tests, failed_tests = _validator.validate()
@@ -79,11 +93,11 @@ class TestRunner(ProcessMixin):
         if not ok_tests:
             self.log("red| Error:  There is no correctly defined tests. "
                      "Execution is canceled.")
-            sys.exit()
+            sys.exit(2)
 
         # sort by name to make tests order predicted
         for t_name, t_data in sorted(ok_tests, key=lambda x: x[0]):
-            t = tts.DBTest(t_name, t_data, self.dbms, self.log)
+            t = tts.DBTest(t_name, t_data, self.dbms)
             self.validated_tests.append(t)
 
         for pt in self.python_tests:

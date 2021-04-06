@@ -5,11 +5,10 @@ from wasabi import color
 
 
 class DBTest:
-    def __init__(self, name, data, dbms, log):
+    def __init__(self, name, data, dbms):
         self.dbms = dbms
         self.name = name
         self.data = data
-        self.log = log
 
     def run(self):
         result = self._run()
@@ -22,7 +21,7 @@ class DBTest:
             self.dbms.sql_execute(**kwargs)
             if self.dbms.test_error:
                 result = ("red| Cleanup failed\n%s" % self.dbms.test_err_msg)
-        self.log("blue|  %s %s", self.name, result)
+        return result
 
     def _run(self):
         if self.data['db'] not in self.dbms.db_connections:

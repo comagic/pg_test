@@ -1,3 +1,4 @@
+import sys
 import os
 import argparse
 from db_test import runner
@@ -58,5 +59,5 @@ def main():
     r = runner.TestRunner(args)
     r.load_tests()
     r.prepare_db()
-    r.run_tests()
+    sys.exit(r.run_tests())
 #   clean_all do automaticaly on exit

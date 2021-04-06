@@ -65,10 +65,10 @@ class FileStub:
 class DBMS:
     application_name = 'db_test'
 
-    def __init__(self, test, args):
+    def __init__(self, log, args):
         self.docker = args.use_docker or False
-        self.test = test
-        self.log = self.test.log
+        self.log = log
+        self.verbose = args.verbose
         self.host = args.host
         self.port = args.port
         self.username = args.username or os.environ.get('PGUSER', 'postgres')
@@ -213,8 +213,7 @@ class DBMS:
         except (Exception, psycopg2.Error) as e:
             if con:
                 con.rollback()
-            self.test_err_msg = 'red|Exception on sql, add "-v" for detail'
-            if self.test.is_debug:
+            if self.verbose:
                 try:
                     sql = cur.mogrify(query, query_params).decode('utf-8')
                 except Exception as ee:
