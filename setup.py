@@ -40,7 +40,7 @@ setup_requires = []
 # Что нужно для установки
 install_requires = [
     # Локальный pypi
-    'pg-import==1.1.*',
+    'pg-import>=1.2.*',
     'psycopg2',
     'wasabi',
 ]
