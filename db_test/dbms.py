@@ -132,7 +132,7 @@ class DBMS:
             os.remove(f_name)
             raise e
 
-        if res.stderr:
+        if 'ERROR' in res.stderr.decode():
             self.log("red|  Error during execution command: %s. Temporary file"
                      " with DB data is available by path: %s" %
                      (res.stderr.decode(), f_name))
