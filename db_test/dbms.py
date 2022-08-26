@@ -4,8 +4,6 @@ import time
 import psycopg2
 import psycopg2.extras
 import subprocess
-import sys
-import tempfile
 
 from pg_import import executor
 
@@ -31,11 +29,11 @@ refresh_seq = """
           join pg_namespace nsc ON cl.relnamespace=nsc.oid
          where seq.relkind = 'S' and deptype = 'a'
       loop
-        execute format('select coalesce(max(%%I), 0)
-                          from %%I.%%I',
+        execute format('select coalesce(max(%I), 0)
+                          from %I.%I',
                        r.attname, r.nspname, r.relname) into t;
         execute format('select last_value - (not is_called)::int
-                          from %%I.%%I',
+                          from %I.%I',
                        r.seqnsp, r.seqname) into s;
 
         if t <> s then
@@ -100,7 +98,7 @@ class DBMS:
         self.disconnect_db()
         self.drop_db()
 
-    def process_pg_import(self, section, db_dir, ext_db_name, extra_data=''):
+    def process_pg_import(self, section, db_dir, db_name, extra_data=''):
         ''' Get commands from pg_import and execute them '''
         pg_cmds = FileStub()
         kwargs = {
@@ -111,33 +109,20 @@ class DBMS:
         executor.Executor(**kwargs)()
 
         final_string = ''.join([extra_data, pg_cmds.read()])
-        if self.docker:
-            # NOTE Customization commands for docker!
-            # replace it due to hardcode in main repo comagic_db
+
+        if section == 'data':
+            final_string = final_string.replace("'", "''")
             final_string = final_string.replace(
-                '/usr/lib64/pgsql/tablefunc',
-                '/usr/lib/postgresql/9.6/lib/tablefunc')
+                "from stdin;",
+                " from program 'cat <<EOF"
+            )
+            final_string = final_string.replace(
+                "\\.",
+                "EOF';"
+            )
+            final_string = final_string.replace("\\", "\\\\")
 
-        # Create temporary file for easy debugging and other funny things
-        f_name = tempfile.mkstemp(suffix=section)[1]
-
-        # Write pg_import output to file
-        with open(f_name, 'w') as f_obj:
-            f_obj.write(final_string)
-
-        try:
-            # Execute all commands from the file
-            res = self.run_psql_commands(f_name, ext_db_name)
-        except Exception as e:
-            os.remove(f_name)
-            raise e
-
-        if 'ERROR' in res.stderr.decode():
-            self.log("red|  Error during execution command: %s. Temporary file"
-                     " with DB data is available by path: %s" %
-                     (res.stderr.decode(), f_name))
-            sys.exit()
-        os.remove(f_name)
+        self.sql_execute(db_name, final_string)
 
     def run_psql_commands(self, f_name, ext_db_name):
         ''' Execute cammand in subprocess to handle Errors '''
@@ -154,26 +139,26 @@ class DBMS:
     def build_db(self):
         for db_name, db_dir in self.dbs.items():
             ext_db_name = self.ext_db_name(db_name)
-            self.log('green|Creating db %s', db_name)
+            self.log('green|Creating db %s (%s)', db_name, ext_db_name)
             self.sql_execute('sys', 'create database %s' % ext_db_name)
             self.log('green|Creating schema')
+            self.connect_db(db_name, ext_db_name)
             self.process_pg_import(
-                'pre-data', db_dir, ext_db_name,
+                'pre-data', db_dir, db_name,
                 extra_data="set client_min_messages to warning;")
 
             self.log('green|Loading default data')
-            self.process_pg_import('data', db_dir, ext_db_name)
+            self.process_pg_import('data', db_dir, db_name)
 
             test_data = os.path.join(self.test_dir, 'data', db_name)
             if os.path.exists(test_data):
                 self.log('green|Loading test data into database %s' % db_name)
-                self.process_pg_import('data', self.test_dir, ext_db_name)
+                self.process_pg_import('data', self.test_dir, db_name)
 
             self.log('green|Creating constraint')
-            self.process_pg_import('post-data', db_dir, ext_db_name)
+            self.process_pg_import('post-data', db_dir, db_name)
 
             self.log('green|DB connecting %s', db_name)
-            self.connect_db(db_name, ext_db_name)
             self.sql_execute(db_name, refresh_seq)
 
     def connect_db(self, db_name, ext_db_name, isolation_level=None):
@@ -202,7 +187,10 @@ class DBMS:
         try:
             con = self.db_connections[db_name]
             cur = con.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
-            cur.execute(query, query_params)
+            if query_params:
+                cur.execute(query, query_params)
+            else:
+                cur.execute(query)
             if cur.rowcount > 0:
                 try:
                     res = [dict(r) for r in cur.fetchall()]

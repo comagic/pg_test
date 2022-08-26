@@ -48,12 +48,13 @@ install_requires = [
 
 # Что нужно для запуска python setup.py test
 tests_require = [
+    'flake8>=4,<5',
     'pytest',
     'pytest-cov',
     'pytest-flake8',
     'pytest-asyncio',
     'pytest-sugar',
-    'asynctest',
+    'asynctest'
 ]
 
 
