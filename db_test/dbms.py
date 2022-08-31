@@ -123,6 +123,8 @@ class DBMS:
             final_string = final_string.replace("\\", "\\\\")
 
         self.sql_execute(db_name, final_string)
+        if self.exception:
+            raise self.exception
 
     def run_psql_commands(self, f_name, ext_db_name):
         ''' Execute cammand in subprocess to handle Errors '''
