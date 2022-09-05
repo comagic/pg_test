@@ -111,14 +111,35 @@ class DBMS:
         final_string = ''.join([extra_data, pg_cmds.read()])
 
         if section == 'data':
-            final_string = final_string.replace(
-                "from stdin;",
-                'from program $program$cat <<"EeOoFf"'
-            )
-            final_string = final_string.replace(
-                "\n\\.",
-                "\nEeOoFf$program$;"
-            )
+            def build_copy_cmd(header, strs):
+                return header + '\n'.join(strs) + "\nEeOoFf$program$;"
+
+            # split data by 127KB
+            cmds = []
+            final_string += '\n\n'
+            tables = final_string.split('\n\\.\n\n')[:-1]
+            for t in tables:
+                strs = t.split('\n')
+                copy = strs.pop(0)
+                copy = copy.replace(
+                    "from stdin;",
+                    'from program $program$cat <<"EeOoFf"\n'
+                )
+                if not strs:
+                    continue
+                tmp_strs = []
+                cur_len = 0
+                for s in strs:
+                    s_len = len(s.encode('utf-8'))
+                    if cur_len + s_len < 126 * 1024:
+                        tmp_strs.append(s)
+                        cur_len += s_len
+                    else:
+                        cmds.append(build_copy_cmd(copy, tmp_strs))
+                        tmp_strs = [s]
+                        cur_len = s_len
+                cmds.append(build_copy_cmd(copy, tmp_strs))
+            final_string = '\n\n'.join(cmds)
 
         self.sql_execute(db_name, final_string)
         if self.exception:
