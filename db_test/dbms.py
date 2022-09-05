@@ -117,8 +117,8 @@ class DBMS:
                 " from program 'cat <<EOF"
             )
             final_string = final_string.replace(
-                "\\.",
-                "EOF';"
+                "\n\\.",
+                "\nEOF';"
             )
             final_string = final_string.replace("\\", "\\\\")
 
