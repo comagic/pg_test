@@ -111,16 +111,14 @@ class DBMS:
         final_string = ''.join([extra_data, pg_cmds.read()])
 
         if section == 'data':
-            final_string = final_string.replace("'", "''")
             final_string = final_string.replace(
                 "from stdin;",
-                " from program 'cat <<EOF"
+                'from program $program$cat <<"EeOoFf"'
             )
             final_string = final_string.replace(
                 "\n\\.",
-                "\nEOF';"
+                "\nEeOoFf$program$;"
             )
-            final_string = final_string.replace("\\", "\\\\")
 
         self.sql_execute(db_name, final_string)
         if self.exception:
