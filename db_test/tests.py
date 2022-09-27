@@ -33,6 +33,10 @@ class DBTest:
             'db_name': self.data['db'],
             'query': self.data['sql']
         }
+        for db_name in self.dbms.dbs:
+            dbname = self.dbms.ext_db_name(db_name)
+            kwargs['plexor_connection_' + db_name] = \
+                f'dbname={dbname} host={self.dbms.host} port={self.dbms.port}'
         if 'sql' in self.data:
             if self.data.get('params'):
                 kwargs.update(self.data['params'])
