@@ -98,17 +98,11 @@ class DBMS:
         self.disconnect_db()
         self.drop_db()
 
-    def process_pg_import(self, section, db_dir, db_name, extra_data=''):
+    def process_pg_import(self, section, db_dir, db_name, schema=None):
         ''' Get commands from pg_import and execute them '''
         pg_cmds = FileStub()
-        kwargs = {
-            'section': {section},
-            'src_dir': db_dir,
-            'output': pg_cmds
-        }
-        executor.Executor(**kwargs)()
-
-        final_string = ''.join([extra_data, pg_cmds.read()])
+        executor.Executor({section}, schema, db_dir, pg_cmds)()
+        final_string = 'set client_min_messages to warning;' + pg_cmds.read()
 
         if section == 'data':
             def build_copy_cmd(header, strs):
@@ -164,9 +158,7 @@ class DBMS:
             self.sql_execute('sys', 'create database %s' % ext_db_name)
             self.log('green|Creating schema')
             self.connect_db(db_name, ext_db_name)
-            self.process_pg_import(
-                'pre-data', db_dir, db_name,
-                extra_data="set client_min_messages to warning;")
+            self.process_pg_import('pre-data', db_dir, db_name)
 
             self.log('green|Loading default data')
             self.process_pg_import('data', db_dir, db_name)
@@ -174,7 +166,7 @@ class DBMS:
             test_data = os.path.join(self.test_dir, 'data', db_name)
             if os.path.exists(test_data):
                 self.log('green|Loading test data into database %s' % db_name)
-                self.process_pg_import('data', self.test_dir, db_name)
+                self.process_pg_import('data', self.test_dir, db_name, db_name)
 
             self.log('green|Creating constraint')
             self.process_pg_import('post-data', db_dir, db_name)
