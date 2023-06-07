@@ -1,6 +1,7 @@
 # -*- coding:utf-8 -*-
 import os
 import time
+import re
 import psycopg2
 import psycopg2.extras
 import subprocess
@@ -98,42 +99,51 @@ class DBMS:
         self.disconnect_db()
         self.drop_db()
 
+    @staticmethod
+    def split_long_copy_command(src):
+        def build_copy_cmd(header, strs):
+            if strs:
+                return header + '\n'.join(strs) + "\nEeOoFf$program$;"
+            return ''
+
+        start_copy_pattern = re.compile('^copy (.*) from stdin;$')
+        cmds = []
+        copy_data = []
+        copy_data_within = False
+        for s in src.split('\n'):
+            if copy_data_within:
+                if s == '\\.':
+                    copy_data_within = False
+                    cmds.append(build_copy_cmd(copy_header, copy_data))
+                    copy_data = []
+                else:
+                    s_len = len(s.encode('utf-8'))
+                    if cur_len + s_len < 126 * 1024:
+                        copy_data.append(s)
+                        cur_len += s_len
+                    else:
+                        cmds.append(build_copy_cmd(copy_header, copy_data))
+                        copy_data = [s]
+                        cur_len = s_len
+
+            if start_copy_pattern.match(s):
+                copy_header = s.replace(
+                    "from stdin;",
+                    'from program $program$cat <<"EeOoFf"\n'
+                )
+                copy_data_within = True
+                cur_len = 0
+        return '\n'.join(cmds)
+
+
     def process_pg_import(self, section, db_dir, db_name, schema=None):
         ''' Get commands from pg_import and execute them '''
         pg_cmds = FileStub()
         executor.Executor({section}, schema, db_dir, pg_cmds)()
-        final_string = 'set client_min_messages to warning;' + pg_cmds.read()
+        final_string = 'set client_min_messages to warning;\n' + pg_cmds.read()
 
         if section == 'data':
-            def build_copy_cmd(header, strs):
-                return header + '\n'.join(strs) + "\nEeOoFf$program$;"
-
-            # split data by 127KB
-            cmds = []
-            final_string += '\n\n'
-            tables = final_string.split('\n\\.\n\n')[:-1]
-            for t in tables:
-                strs = t.split('\n')
-                copy = strs.pop(0)
-                copy = copy.replace(
-                    "from stdin;",
-                    'from program $program$cat <<"EeOoFf"\n'
-                )
-                if not strs:
-                    continue
-                tmp_strs = []
-                cur_len = 0
-                for s in strs:
-                    s_len = len(s.encode('utf-8'))
-                    if cur_len + s_len < 126 * 1024:
-                        tmp_strs.append(s)
-                        cur_len += s_len
-                    else:
-                        cmds.append(build_copy_cmd(copy, tmp_strs))
-                        tmp_strs = [s]
-                        cur_len = s_len
-                cmds.append(build_copy_cmd(copy, tmp_strs))
-            final_string = '\n\n'.join(cmds)
+            final_string = self.split_long_copy_command(final_string)
 
         self.sql_execute(db_name, final_string)
         if self.exception:
