@@ -110,6 +110,8 @@ class DBMS:
         cmds = []
         copy_data = []
         copy_data_within = False
+        copy_header = None
+        cur_len = 0
         for s in src.split('\n'):
             if copy_data_within:
                 if s == '\\.':
@@ -134,7 +136,6 @@ class DBMS:
                 copy_data_within = True
                 cur_len = 0
         return '\n'.join(cmds)
-
 
     def process_pg_import(self, section, db_dir, db_name, schema=None):
         ''' Get commands from pg_import and execute them '''
