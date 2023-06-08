@@ -48,6 +48,7 @@ def main():
     arg_parser.add_argument('--range',
                             required=False,
                             action='append',
+                            default=[],
                             help='--range=start_id:stop_id')
 
     args = arg_parser.parse_args()
