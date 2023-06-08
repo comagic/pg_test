@@ -45,6 +45,10 @@ def main():
                             required=False,
                             action='store_true',
                             help='use docker or some other DB')
+    arg_parser.add_argument('--range',
+                            required=False,
+                            action='append',
+                            help='--range=start_id:stop_id')
 
     args = arg_parser.parse_args()
 

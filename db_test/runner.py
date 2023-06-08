@@ -45,6 +45,13 @@ class TestRunner(ProcessMixin):
         self.python_tests = []
         self.python_validated_tests = []
         self.failed_count = 0
+        self.id_ranges = [
+            range(
+                int(r.split(':')[0]),
+                int(r.split(':')[1] or 99999999999) + 1
+            )
+            for r in args.range
+        ]
 
     def prepare_db(self):
         if not self.keep:
@@ -58,6 +65,9 @@ class TestRunner(ProcessMixin):
             if t.data['id'] == self.break_on_test:
                 self.log('green|break on <%s>', self.break_on_test)
                 break
+            if self.id_ranges and \
+                    not any(t.data['id'] in r for r in self.id_ranges):
+                continue
             result = t.run()
             self.failed_count += int(not result.startswith('green| Passed'))
             if self.verbose or result.startswith('green| Passed'):
