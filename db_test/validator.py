@@ -15,13 +15,13 @@ class TestKey:
 
 
 schema = [
-    TestKey('id', required=True),
+    TestKey('id', required=True, _type='any'),
     TestKey('name', required=True),
     TestKey('sql', required=True),
     TestKey('result', required=True, _type='any'),
     TestKey('db', required=True),
     TestKey('check_sql'),
-    TestKey('parent', check='parent_check'),
+    TestKey('parent', check='parent_check', _type='any'),
     TestKey('params', _type=dict, check='params_check'),
     TestKey('cleanup'),
     TestKey('expected_exception', check='expected_exception_check'),

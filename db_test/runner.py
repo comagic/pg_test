@@ -96,7 +96,7 @@ class TestRunner(ProcessMixin):
             sys.exit(2)
 
         # sort by name to make tests order predicted
-        for t_name, t_data in sorted(ok_tests, key=lambda x: x[0]):
+        for t_name, t_data in sorted(ok_tests, key=lambda x: x[1]['id']):
             t = tts.DBTest(t_name, t_data, self.dbms)
             self.validated_tests.append(t)
 
