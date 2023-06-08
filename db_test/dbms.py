@@ -128,13 +128,16 @@ class DBMS:
                         copy_data = [s]
                         cur_len = s_len
 
-            if start_copy_pattern.match(s):
+            elif start_copy_pattern.match(s):
                 copy_header = s.replace(
                     "from stdin;",
                     'from program $program$cat <<"EeOoFf"\n'
                 )
                 copy_data_within = True
                 cur_len = 0
+
+            else:
+                cmds.append(s)
         return '\n'.join(cmds)
 
     def process_pg_import(self, section, db_dir, db_name, schema=None):
