@@ -43,6 +43,7 @@ install_requires = [
     'pg-import>=1.2.0',
     'psycopg2',
     'wasabi',
+    'datadiff'
 ]
 
 

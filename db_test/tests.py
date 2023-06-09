@@ -1,6 +1,6 @@
 import inspect
 import re
-import difflib
+import datadiff
 from wasabi import color
 
 
@@ -92,38 +92,26 @@ class DBTest:
         if res == expected_res:
             return "green| Passed"
         else:
-            return ("red| Failed\n"
-                    "yellow|    expected result:\n"
-                    "default|      %s\n"
-                    "yellow|    does not match actual:\n"
-                    "default|      %s\n"
-                    "yellow|    diff:\n"
-                    "default|      %s") % (expected_res,
-                                           res,
-                                           self.diff_strings(
-                                               str(expected_res),
-                                               str(res)))
+            return (f"red| Failed\n"
+                    f"yellow|    expected result:\n"
+                    f"default|      {expected_res}\n"
+                    f"yellow|    does not match actual:\n"
+                    f"default|      {res}\n"
+                    f"yellow|    diff:\n"
+                    f"default|{self.diff_strings(expected_res, res)}")
 
     def match_expected_exception(self):
         return self.data.get('expected_exception') and \
                re.match(self.data.get('expected_exception'),
                         str(self.dbms.exception).replace('\n', ' '))
 
-    def diff_strings(self, a, b):
-        output = []
-        matcher = difflib.SequenceMatcher(None, a, b)
-        for opcode, a0, a1, b0, b1 in matcher.get_opcodes():
-            if opcode == "equal":
-                output.append(a[a0:a1])
-            elif opcode == "insert":
-                output.append(color(b[b0:b1], fg=16, bg="green"))
-            elif opcode == "delete":
-                output.append(color(a[a0:a1], fg=16, bg="red"))
-            elif opcode == "replace":
-                output.append(color(b[b0:b1], fg=16, bg="green"))
-                output.append(color(a[a0:a1], fg=16, bg="red"))
-        return "".join(output)
-
+    def diff_strings(self, excepted, result):
+        return str(datadiff.diff(
+            excepted,
+            result,
+            fromfile="expected",
+            tofile="result",
+        ))
 
 class PythonTests:
     def __init__(self, plugin_class, dbms, log):
