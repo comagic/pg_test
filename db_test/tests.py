@@ -9,6 +9,7 @@ class DBTest:
         self.dbms = dbms
         self.name = name
         self.data = data
+        self.data['params'] = self.data.get('params') or {}
 
     def run(self):
         result = self._run()
@@ -29,18 +30,21 @@ class DBTest:
                     "Available DB names are: %s. Skipped." %
                     (self.data['db'], self.dbms.db_connections.keys()))
 
-        kwargs = {
-            'db_name': self.data['db'],
-            'query': self.data['sql']
+        plexor_connections = {
+            'plexor_connection_' + db_name: (
+                f'dbname={self.dbms.ext_db_name(db_name)} '
+                f'host={self.dbms.host} port={self.dbms.port}'
+            )
+            for db_name in self.dbms.dbs
         }
-        for db_name in self.dbms.dbs:
-            dbname = self.dbms.ext_db_name(db_name)
-            kwargs['plexor_connection_' + db_name] = \
-                f'dbname={dbname} host={self.dbms.host} port={self.dbms.port}'
+
         if 'sql' in self.data:
-            if self.data.get('params'):
-                kwargs.update(self.data['params'])
-            res = self.dbms.sql_execute(**kwargs)
+            res = self.dbms.sql_execute(
+                self.data['db'],
+                self.data['sql'],
+                **self.data['params'],
+                **plexor_connections,
+            )
             if self.dbms.test_error:
                 if not self.data.get('expected_exception'):
                     return "red| Failed\n%s" % self.dbms.test_err_msg
@@ -58,16 +62,26 @@ class DBTest:
                             self.data['expected_exception'],
                             self.dbms.exception.diag.message_primary,
                             '\n     '.join(self.dbms.test_err_msg.split('\n')))
-        if self.data.get('check_sql'):
-            check_kwargs = {
-                'db_name': self.data['db'],
-                'query': self.data['check_sql']
-            }
-            if self.data.get('params'):
-                check_kwargs.update(self.data['params'])
-            res = self.dbms.sql_execute(**check_kwargs)
+
+        if self.data.get('global_params_by_sql'):
+            params = self.dbms.sql_execute(
+                self.data['db'],
+                self.data['global_params_by_sql'],
+                **self.data['params']
+            )
             if self.dbms.test_error:
-                return "red| Failed\n%s" % self.dbms.test_err_msg
+                return "red| Failed on global_params_by_sql\n%s" % self.dbms.test_err_msg
+            if params:
+                self.dbms.global_params.update(params[0])
+
+        if self.data.get('check_sql'):
+            res = self.dbms.sql_execute(
+                self.data['db'],
+                self.data['check_sql'],
+                **self.data['params']
+            )
+            if self.dbms.test_error:
+                return "red| Failed on check_sql\n%s" % self.dbms.test_err_msg
 
         if self.data.get('expected_exception'):
             expected_res = 'expected_exception: ' + \

@@ -82,6 +82,7 @@ class DBMS:
             psycopg2.extensions.ISOLATION_LEVEL_AUTOCOMMIT)
         self.test_error = False
         self.test_err_msg = "green|No error"
+        self.global_params = {}
 
     def ext_db_name(self, db_name):
         return db_name + self.ext_name
@@ -215,7 +216,7 @@ class DBMS:
             con = self.db_connections[db_name]
             cur = con.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
             if query_params:
-                cur.execute(query, query_params)
+                cur.execute(query, dict(query_params, **self.global_params))
             else:
                 cur.execute(query)
             if cur.rowcount > 0:

@@ -21,6 +21,7 @@ schema = [
     TestKey('result', required=True, _type='any'),
     TestKey('db', required=True),
     TestKey('check_sql'),
+    TestKey('global_params_by_sql'),
     TestKey('parent', check='parent_check', _type='any'),
     TestKey('params', _type=dict, check='params_check'),
     TestKey('cleanup'),
