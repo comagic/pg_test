@@ -35,6 +35,7 @@ def main():
     arg_parser.add_argument('-b', '--break',
                             required=False,
                             metavar='TEST',
+                            type=int,
                             dest='break_on_test',
                             help='stop before TEST')
     arg_parser.add_argument('-k', '--keep',
