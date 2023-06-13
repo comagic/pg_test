@@ -106,6 +106,8 @@ class DBTest:
                         str(self.dbms.exception).replace('\n', ' '))
 
     def diff_strings(self, excepted, result):
+        if excepted is None or result is None:
+            return ''
         return str(datadiff.diff(
             excepted,
             result,
