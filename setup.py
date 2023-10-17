@@ -42,7 +42,6 @@ install_requires = [
     # Локальный pypi
     'pg-import>=1.2.0',
     'psycopg2',
-    'wasabi',
     'datadiff'
 ]
 

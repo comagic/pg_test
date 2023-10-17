@@ -21,8 +21,9 @@ class Test(adapter.Adapter):
                                               "equal to actual %s" %
                                               (len(expected), len(actual)))
         formatted_actual = [
-                {k: getattr(val, k) for k in val._fields}
-                for val in actual
+            {k: getattr(val, k)
+             for k in val._fields}
+            for val in actual
         ]
         assert expected == formatted_actual, ("Expected:\n %s\ndoes not match "
                                               "Actual:\n %s" %

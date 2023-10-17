@@ -6,9 +6,10 @@ from db_test import runner
 
 def main():
     arg_parser = argparse.ArgumentParser(
-                     description='Run test',
-                     epilog='Report bugs to <a.chernyakov@comagic.dev>.',
-                     conflict_handler='resolve')
+        description='Run test',
+        epilog='Report bugs to <a.chernyakov@comagic.dev>.',
+        conflict_handler='resolve'
+    )
     arg_parser.add_argument('-v', '--verbose',
                             action='store_true',
                             help='verbose message')

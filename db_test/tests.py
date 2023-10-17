@@ -100,9 +100,13 @@ class DBTest:
                     f"default|{self.diff_strings(expected_res, res)}")
 
     def match_expected_exception(self):
-        return self.data.get('expected_exception') and \
-               re.match(self.data.get('expected_exception'),
-                        str(self.dbms.exception).replace('\n', ' '))
+        return (
+            self.data.get('expected_exception') and
+            re.match(
+                self.data.get('expected_exception'),
+                str(self.dbms.exception).replace('\n', ' ')
+            )
+        )
 
     def diff_strings(self, excepted, result):
         if excepted is None or result is None:
