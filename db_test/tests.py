@@ -111,12 +111,15 @@ class DBTest:
     def diff_strings(self, excepted, result):
         if excepted is None or result is None:
             return ''
-        return str(datadiff.diff(
-            excepted,
-            result,
-            fromfile="expected",
-            tofile="result",
-        ))
+        try:
+            return str(datadiff.diff(
+                excepted,
+                result,
+                fromfile="expected",
+                tofile="result",
+            ))
+        except Exception as e:
+            return str(e)
 
 
 class PythonTests:
