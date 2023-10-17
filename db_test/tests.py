@@ -1,7 +1,6 @@
 import inspect
 import re
 import datadiff
-from wasabi import color
 
 
 class DBTest:
@@ -114,6 +113,7 @@ class DBTest:
             fromfile="expected",
             tofile="result",
         ))
+
 
 class PythonTests:
     def __init__(self, plugin_class, dbms, log):

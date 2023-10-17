@@ -73,6 +73,7 @@ class DBMS:
         self.username = args.username or os.environ.get('PGUSER', 'postgres')
         self.test_dir = args.test_dir
         self.db_dirs = args.db_dirs
+        self.db_name = args.db_name
         self.ext_name = time.strftime('_test_%Y%m%d%H%M%S')
         self.dbs = dict([d.split(':') for d in self.db_dirs])
         self.db_connections = {}
@@ -85,7 +86,7 @@ class DBMS:
         self.global_params = {}
 
     def ext_db_name(self, db_name):
-        return db_name + self.ext_name
+        return self.db_name or db_name + self.ext_name
 
     def drop_db(self):
         for db_name in self.dbs:

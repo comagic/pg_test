@@ -51,6 +51,9 @@ def main():
                             action='append',
                             default=[],
                             help='--range=start_id:stop_id')
+    arg_parser.add_argument('--db_name',
+                            required=False,
+                            help='fix name of database')
 
     args = arg_parser.parse_args()
 
