@@ -40,7 +40,7 @@ setup_requires = []
 # Что нужно для установки
 install_requires = [
     # Локальный pypi
-    'pg-import>=1.2.0',
+    'pg-import>=2.0.0',
     'psycopg2',
     'datadiff'
 ]
