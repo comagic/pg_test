@@ -25,10 +25,10 @@ def main():
                             required=True,
                             help='directory with test definition')
     arg_parser.add_argument('-h', '--host',
-                            required=True,
+                            required=False,
                             help='host of PostgreSQL cluster')
     arg_parser.add_argument('-p', '--port',
-                            required=True,
+                            required=False,
                             help='port of PostgreSQL cluster')
     arg_parser.add_argument('-U', '--username',
                             required=False,
